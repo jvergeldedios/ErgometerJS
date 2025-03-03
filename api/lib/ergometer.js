@@ -6,11 +6,22 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 /**
  * Created by tijmen on 25-12-15.
  */
@@ -684,10 +695,10 @@ var ergometer;
                     if (found)
                         return found;
                     else
-                        throw "characteristics " + characteristicUid + " not found in service " + serviceUid;
+                        throw "characteristics ".concat(characteristicUid, " not found in service ").concat(serviceUid);
                 }
                 else
-                    throw "service " + serviceUid + " not found";
+                    throw "service ".concat(serviceUid, " not found");
             };
             DriverBleat.prototype.connect = function (device, disconnectFn) {
                 var _this = this;
@@ -967,7 +978,7 @@ var ergometer;
             DriverWebBlueTooth.prototype.getCharacteristic = function (serviceUid, characteristicUid) {
                 var _this = this;
                 if (this._performanceMonitor.logLevel == ergometer.LogLevel.trace)
-                    this._performanceMonitor.traceInfo("getCharacteristic " + characteristicUid + " ");
+                    this._performanceMonitor.traceInfo("getCharacteristic ".concat(characteristicUid, " "));
                 return new Promise(function (resolve, reject) {
                     if (!_this._server || !_this._server.connected)
                         reject("server not connected");
@@ -1078,7 +1089,7 @@ var ergometer;
             DriverWebBlueTooth.prototype.writeCharacteristic = function (serviceUIID, characteristicUUID, data) {
                 var _this = this;
                 if (this._performanceMonitor.logLevel == ergometer.LogLevel.trace)
-                    this._performanceMonitor.traceInfo("writeCharacteristic " + characteristicUUID + " : " + data + " ");
+                    this._performanceMonitor.traceInfo("writeCharacteristic ".concat(characteristicUUID, " : ").concat(data, " "));
                 if (!this._device || !this._device.gatt || !this._device.gatt.connected) {
                     this.onDisconnected(null);
                     return Promise.reject("Not connected");
@@ -1118,7 +1129,7 @@ var ergometer;
             DriverWebBlueTooth.prototype.readCharacteristic = function (serviceUIID, characteristicUUID) {
                 var _this = this;
                 if (this._performanceMonitor.logLevel == ergometer.LogLevel.trace)
-                    this._performanceMonitor.traceInfo("readCharacteristic " + characteristicUUID + "  ");
+                    this._performanceMonitor.traceInfo("readCharacteristic ".concat(characteristicUUID, "  "));
                 if (!this._device || !this._device.gatt || !this._device.gatt.connected) {
                     this.onDisconnected(null);
                     return Promise.reject("Not connected");
@@ -1131,7 +1142,7 @@ var ergometer;
                         })
                             .then(function (data) {
                             if (_this._performanceMonitor.logLevel == ergometer.LogLevel.trace)
-                                _this._performanceMonitor.traceInfo("doReadCharacteristic " + characteristicUUID + " : " + ergometer.utils.typedArrayToHexString(data.buffer, true) + " ");
+                                _this._performanceMonitor.traceInfo("doReadCharacteristic ".concat(characteristicUUID, " : ").concat(ergometer.utils.typedArrayToHexString(data.buffer, true), " "));
                             resolve(data.buffer);
                         })
                             .catch(function (e) {
@@ -1149,7 +1160,7 @@ var ergometer;
             };
             DriverWebBlueTooth.prototype.onCharacteristicValueChanged = function (event) {
                 if (this._performanceMonitor.logLevel == ergometer.LogLevel.trace)
-                    this._performanceMonitor.traceInfo("onCharacteristicValueChanged " + event.target.uuid + " : " + ergometer.utils.typedArrayToHexString(event.target.value.buffer, true) + " ");
+                    this._performanceMonitor.traceInfo("onCharacteristicValueChanged ".concat(event.target.uuid, " : ").concat(ergometer.utils.typedArrayToHexString(event.target.value.buffer, true), " "));
                 try {
                     if (!this._device.gatt.connected) {
                         this.onDisconnected(null);
@@ -1199,7 +1210,7 @@ var ergometer;
             DriverWebBlueTooth.prototype.enableNotification = function (serviceUIID, characteristicUUID, receive) {
                 var _this = this;
                 if (this._performanceMonitor.logLevel == ergometer.LogLevel.trace)
-                    this._performanceMonitor.traceInfo("enableNotification " + characteristicUUID + "  ");
+                    this._performanceMonitor.traceInfo("enableNotification ".concat(characteristicUUID, "  "));
                 if (!this._device.gatt.connected) {
                     this.onDisconnected(null);
                     return Promise.reject("Not connected");
@@ -1226,7 +1237,7 @@ var ergometer;
                 var _this = this;
                 //only disable when receive is
                 if (this._performanceMonitor.logLevel == ergometer.LogLevel.trace)
-                    this._performanceMonitor.traceInfo("disableNotification " + characteristicUUID + "  ");
+                    this._performanceMonitor.traceInfo("disableNotification ".concat(characteristicUUID, "  "));
                 return new Promise(function (resolve, reject) {
                     try {
                         if (typeof _this._listenerMap[characteristicUUID] !== 'undefined' && _this._listenerMap[characteristicUUID]) {
@@ -1763,6 +1774,10 @@ var ergometer;
         usb.WRITE_BUF_SIZE = 121;
         usb.REPORT_TYPE = 2;
         usb.CONCEPT2_VENDOR_ID = 6052;
+        // Default configuration using the original Concept2 vendor ID
+        usb.DEFAULT_DRIVER_CONFIG = {
+            vendorIds: [usb.CONCEPT2_VENDOR_ID],
+        };
     })(usb = ergometer.usb || (ergometer.usb = {}));
 })(ergometer || (ergometer = {}));
 var ergometer;
@@ -1784,7 +1799,7 @@ var ergometer;
                 //there is no disconnect in hid api?
                 //shoud fix this another way
                 this._onError = error;
-                this._hid.on('error', function (err) {
+                this._hid.on("error", function (err) {
                     //should do some error handling
                     _this.callError(err);
                 });
@@ -1802,14 +1817,14 @@ var ergometer;
                 return new Promise(function (resolve, reject) {
                     try {
                         if (data.byteLength > usb.USB_CSAVE_SIZE)
-                            throw "Trying to send to much data, the buffer must be smaller or equal to " + usb.USB_CSAVE_SIZE + " and is " + data.byteLength;
+                            throw "Trying to send to much data, the buffer must be smaller or equal to ".concat(usb.USB_CSAVE_SIZE, " and is ").concat(data.byteLength);
                         var buf = new ArrayBuffer(usb.WRITE_BUF_SIZE);
                         var view = new Int8Array(buf);
                         view.set([usb.REPORT_TYPE], 0);
                         view.set(new Int8Array(data), 1);
                         var written = _this._hid.write(Array.from(view));
                         if (written != usb.WRITE_BUF_SIZE)
-                            throw "Only " + written + " bytes written to usb device. it should be " + usb.WRITE_BUF_SIZE;
+                            throw "Only ".concat(written, " bytes written to usb device. it should be ").concat(usb.WRITE_BUF_SIZE);
                         //resolve the send
                         resolve();
                         //start listening to the result
@@ -1828,12 +1843,15 @@ var ergometer;
                         if (err)
                             _this.callError(err);
                         else {
-                            if (inputData && inputData.length >= usb.WRITE_BUF_SIZE && inputData[0] == usb.REPORT_TYPE) {
+                            if (inputData &&
+                                inputData.length >= usb.WRITE_BUF_SIZE &&
+                                inputData[0] == usb.REPORT_TYPE) {
                                 //copy all results into a buffer of 121
                                 var endByte = usb.WRITE_BUF_SIZE - 1;
                                 while (endByte >= 0 && inputData[endByte] == 0)
                                     endByte--;
-                                if (endByte >= 0 && inputData[endByte] == ergometer.csafe.defs.FRAME_END_BYTE) {
+                                if (endByte >= 0 &&
+                                    inputData[endByte] == ergometer.csafe.defs.FRAME_END_BYTE) {
                                     var buf = new ArrayBuffer(usb.WRITE_BUF_SIZE);
                                     var ar = new Int8Array(buf);
                                     ar.set(inputData, 0);
@@ -1857,15 +1875,18 @@ var ergometer;
         }());
         usb.DeviceNodeHid = DeviceNodeHid;
         var DriverNodeHid = /** @class */ (function () {
-            function DriverNodeHid() {
+            function DriverNodeHid(config) {
+                if (config === void 0) { config = usb.DEFAULT_DRIVER_CONFIG; }
+                this._config = config;
             }
             DriverNodeHid.prototype.requestDevics = function () {
+                var _this = this;
                 try {
                     var result = [];
                     var devices = nodehid.devices();
                     devices.forEach(function (device) {
-                        //add all concept 2 devices
-                        if (device.vendorId == usb.CONCEPT2_VENDOR_ID) {
+                        //add all devices with matching vendor IDs
+                        if (_this._config.vendorIds.indexOf(device.vendorId) !== -1) {
                             var deviceInfo = new DeviceNodeHid(device);
                             deviceInfo.serialNumber = device.serialNumber;
                             deviceInfo.productId = device.productId;
@@ -1918,7 +1939,7 @@ var ergometer;
                 return this._deviceInfo.open();
             };
             DeviceWebHid.prototype.detachDisconnect = function () {
-                navigator.hid.removeEventListener('disconnect', this.disconnected);
+                navigator.hid.removeEventListener("disconnect", this.disconnected);
             };
             DeviceWebHid.prototype.close = function () {
                 this.detachDisconnect();
@@ -1926,7 +1947,7 @@ var ergometer;
             };
             DeviceWebHid.prototype.sendData = function (data) {
                 if (data.byteLength > usb.USB_CSAVE_SIZE)
-                    return Promise.reject("Trying to send to much data, the buffer must be smaller or equal to " + usb.USB_CSAVE_SIZE + " and is " + data.byteLength);
+                    return Promise.reject("Trying to send to much data, the buffer must be smaller or equal to ".concat(usb.USB_CSAVE_SIZE, " and is ").concat(data.byteLength));
                 var buf = new ArrayBuffer(usb.USB_CSAVE_SIZE);
                 var view = new Int8Array(buf);
                 view.set(new Int8Array(data), 0);
@@ -1940,8 +1961,9 @@ var ergometer;
                     var endByte = usb.USB_CSAVE_SIZE - 1;
                     while (endByte >= 0 && inputData.getUint8(endByte) == 0)
                         endByte--;
-                    if (endByte >= 0 && inputData.getUint8(endByte) == ergometer.csafe.defs.FRAME_END_BYTE) {
-                        //return the the data 
+                    if (endByte >= 0 &&
+                        inputData.getUint8(endByte) == ergometer.csafe.defs.FRAME_END_BYTE) {
+                        //return the the data
                         var view = new DataView(inputData.buffer, 0, endByte);
                         this._receiveData(view);
                     }
@@ -1955,29 +1977,40 @@ var ergometer;
         }());
         usb.DeviceWebHid = DeviceWebHid;
         var DriverWebHid = /** @class */ (function () {
-            function DriverWebHid() {
+            function DriverWebHid(config) {
+                if (config === void 0) { config = usb.DEFAULT_DRIVER_CONFIG; }
+                this._config = config;
             }
+            DriverWebHid.prototype.getConfig = function () {
+                return this._config;
+            };
+            DriverWebHid.prototype.setConfig = function (config) {
+                this._config = config;
+            };
             DriverWebHid.prototype.requestDevics = function () {
+                var _this = this;
                 return new Promise(function (resolve, reject) {
                     try {
-                        navigator.hid.requestDevice({ filters: [{
-                                    vendorId: usb.CONCEPT2_VENDOR_ID,
-                                }] }).then(function (devices) {
+                        navigator.hid
+                            .requestDevice({
+                            filters: _this._config.vendorIds.map(function (vendorId) { return ({ vendorId: vendorId }); }),
+                        })
+                            .then(function (devices) {
                             if (devices.length > 0) {
                                 var device = devices[0];
                                 var deviceInfo = new DeviceWebHid(device);
-                                //deviceInfo.serialNumber=device.;
                                 deviceInfo.productId = device.productId;
                                 deviceInfo.vendorId = device.vendorId;
                                 deviceInfo.productName = device.productName;
                                 resolve([deviceInfo]);
                             }
                             else
-                                reject("device not found");
-                        }).catch(reject);
+                                resolve([]);
+                        })
+                            .catch(reject);
                     }
-                    catch (error) {
-                        return Promise.reject(error);
+                    catch (e) {
+                        reject(e);
                     }
                 });
             };
@@ -2014,9 +2047,10 @@ var ergometer;
                         return cordova.plugins.UsbHid.open({
                             packetSize: usb.WRITE_BUF_SIZE,
                             timeout: 1000,
-                            skippFirstByteZero: true
+                            skippFirstByteZero: true,
                         });
-                    }).then(resolve, reject);
+                    })
+                        .then(resolve, reject);
                     //   }).catch(reject);
                 });
             };
@@ -2026,14 +2060,15 @@ var ergometer;
             DeviceCordovaHid.prototype.sendData = function (data) {
                 var _this = this;
                 if (data.byteLength > usb.USB_CSAVE_SIZE)
-                    return Promise.reject("Trying to send to much data, the buffer must be smaller or equal to " + usb.USB_CSAVE_SIZE + " and is " + data.byteLength);
+                    return Promise.reject("Trying to send to much data, the buffer must be smaller or equal to ".concat(usb.USB_CSAVE_SIZE, " and is ").concat(data.byteLength));
                 return new Promise(function (resolve, reject) {
                     try {
                         var buf = new ArrayBuffer(usb.WRITE_BUF_SIZE);
                         var view = new Int8Array(buf);
                         view.set([usb.REPORT_TYPE], 0);
                         view.set(new Int8Array(data), 1);
-                        cordova.plugins.UsbHid.writeRead(buf).then(function (data) {
+                        cordova.plugins.UsbHid.writeRead(buf)
+                            .then(function (data) {
                             resolve();
                             //handle the resolve later
                             setTimeout(function () {
@@ -2042,7 +2077,8 @@ var ergometer;
                                     var endByte = usb.WRITE_BUF_SIZE - 1;
                                     while (endByte >= 1 && inputData.getUint8(endByte) == 0)
                                         endByte--;
-                                    if (endByte >= 1 && inputData.getUint8(endByte) == ergometer.csafe.defs.FRAME_END_BYTE) {
+                                    if (endByte >= 1 &&
+                                        inputData.getUint8(endByte) == ergometer.csafe.defs.FRAME_END_BYTE) {
                                         //return the the data except for the first byte
                                         var view = new DataView(inputData.buffer, 1, endByte);
                                         _this._receiveData(view);
@@ -2050,8 +2086,10 @@ var ergometer;
                                     else
                                         _this.callError("end csafe frame not found");
                                 }
-                            }), 0;
-                        }).catch(reject);
+                            }),
+                                0;
+                        })
+                            .catch(reject);
                     }
                     catch (e) {
                         reject(e);
@@ -2062,16 +2100,27 @@ var ergometer;
         }());
         usb.DeviceCordovaHid = DeviceCordovaHid;
         var DriverCordovaHid = /** @class */ (function () {
-            function DriverCordovaHid() {
+            function DriverCordovaHid(config) {
+                if (config === void 0) { config = usb.DEFAULT_DRIVER_CONFIG; }
+                this._config = config;
             }
+            DriverCordovaHid.prototype.getConfig = function () {
+                return this._config;
+            };
+            DriverCordovaHid.prototype.setConfig = function (config) {
+                this._config = config;
+            };
             DriverCordovaHid.prototype.requestDevics = function () {
+                var _this = this;
                 return new Promise(function (resolve, reject) {
                     try {
-                        cordova.plugins.UsbHid.enumerateDevices().then(function (cordovaDevices) {
+                        cordova.plugins.UsbHid.enumerateDevices()
+                            .then(function (devices) {
                             var result = [];
-                            cordovaDevices.forEach(function (device) {
-                                //add all concept 2 devices
-                                if (device.vendorId == usb.CONCEPT2_VENDOR_ID.toString()) {
+                            devices.forEach(function (device) {
+                                //add all devices with matching vendor IDs
+                                if (_this._config.vendorIds.indexOf(parseInt(device.vendorId)) !==
+                                    -1) {
                                     var deviceInfo = new DeviceCordovaHid(device);
                                     deviceInfo.serialNumber = device.serialNumber;
                                     deviceInfo.productId = parseInt(device.productId);
@@ -2081,7 +2130,8 @@ var ergometer;
                                 }
                             });
                             resolve(result);
-                        }, reject);
+                        })
+                            .catch(reject);
                     }
                     catch (e) {
                         reject(e);
@@ -2326,7 +2376,7 @@ var ergometer;
                 buffer[functionName] = function (params) {
                     buffer.addRawCommand({
                         waitForResponse: false,
-                        command: 26 /* SETUSERCFG1_CMD */,
+                        command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
                         detailCommand: command,
                         data: setParams(params),
                         onError: params.onError
@@ -2341,7 +2391,7 @@ var ergometer;
                 buffer[functionName] = function (params) {
                     buffer.addRawCommand({
                         waitForResponse: true,
-                        command: 26 /* SETUSERCFG1_CMD */,
+                        command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
                         detailCommand: detailCommand,
                         onDataReceived: function (data) { params.onDataReceived(converter(data)); },
                         onError: params.onError
@@ -2373,7 +2423,7 @@ var ergometer;
                 buffer[functionName] = function (params) {
                     buffer.addRawCommand({
                         waitForResponse: false,
-                        command: 118 /* SETPMCFG_CMD */,
+                        command: 118 /* csafe.defs.LONG_PMPROPRIETARY_CMDS.SETPMCFG_CMD */,
                         detailCommand: command,
                         data: setParams(params),
                         onError: params.onError
@@ -2390,7 +2440,7 @@ var ergometer;
                 buffer[functionName] = function (params) {
                     buffer.addRawCommand({
                         waitForResponse: false,
-                        command: 119 /* SETPMDATA_CMD */,
+                        command: 119 /* csafe.defs.LONG_PMPROPRIETARY_CMDS.SETPMDATA_CMD */,
                         detailCommand: command,
                         data: setParams(params),
                         onError: params.onError
@@ -2406,7 +2456,7 @@ var ergometer;
                 buffer[functionName] = function (params) {
                     buffer.addRawCommand({
                         waitForResponse: true,
-                        command: 126 /* GETPMCFG_CMD */,
+                        command: 126 /* csafe.defs.PROPRIETARY_GET_CMDS.GETPMCFG_CMD */,
                         detailCommand: detailCommand,
                         onDataReceived: function (data) { params.onDataReceived(converter(data)); },
                         onError: params.onError
@@ -2422,7 +2472,7 @@ var ergometer;
                 buffer[functionName] = function (params) {
                     buffer.addRawCommand({
                         waitForResponse: true,
-                        command: 127 /* GETPMDATA_CMD */,
+                        command: 127 /* csafe.defs.PROPRIETARY_GET_CMDS.GETPMDATA_CMD */,
                         detailCommand: detailCommand,
                         onDataReceived: function (data) { params.onDataReceived(converter(data)); },
                         onError: params.onError
@@ -2455,8 +2505,8 @@ var ergometer;
             buffer.getStrokeState = function (params) {
                 buffer.addRawCommand({
                     waitForResponse: true,
-                    command: 26 /* SETUSERCFG1_CMD */,
-                    detailCommand: 191 /* PM_GET_STROKESTATE */,
+                    command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
+                    detailCommand: 191 /* csafe.defs.PM_SHORT_PULL_DATA_CMDS.PM_GET_STROKESTATE */,
                     onDataReceived: function (data) {
                         if (params.onDataReceived)
                             params.onDataReceived(data.getUint8(0));
@@ -2470,8 +2520,8 @@ var ergometer;
             buffer.getDragFactor = function (params) {
                 buffer.addRawCommand({
                     waitForResponse: true,
-                    command: 26 /* SETUSERCFG1_CMD */,
-                    detailCommand: 193 /* PM_GET_DRAGFACTOR */,
+                    command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
+                    detailCommand: 193 /* csafe.defs.PM_SHORT_PULL_DATA_CMDS.PM_GET_DRAGFACTOR */,
                     onDataReceived: function (data) {
                         if (params.onDataReceived)
                             params.onDataReceived(data.getUint8(0));
@@ -2485,8 +2535,8 @@ var ergometer;
             buffer.getWorkDistance = function (params) {
                 buffer.addRawCommand({
                     waitForResponse: true,
-                    command: 26 /* SETUSERCFG1_CMD */,
-                    detailCommand: 163 /* PM_GET_WORKDISTANCE */,
+                    command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
+                    detailCommand: 163 /* csafe.defs.PM_SHORT_PULL_DATA_CMDS.PM_GET_WORKDISTANCE */,
                     onDataReceived: function (data) {
                         if (params.onDataReceived) {
                             var distance = (data.getUint8(0) +
@@ -2507,8 +2557,8 @@ var ergometer;
             buffer.getWorkTime = function (params) {
                 buffer.addRawCommand({
                     waitForResponse: true,
-                    command: 26 /* SETUSERCFG1_CMD */,
-                    detailCommand: 160 /* PM_GET_WORKTIME */,
+                    command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
+                    detailCommand: 160 /* csafe.defs.PM_SHORT_PULL_DATA_CMDS.PM_GET_WORKTIME */,
                     onDataReceived: function (data) {
                         if (params.onDataReceived) {
                             var timeInSeconds = ((data.getUint8(0) +
@@ -2532,8 +2582,8 @@ var ergometer;
             buffer.getPowerCurve = function (params) {
                 buffer.addRawCommand({
                     waitForResponse: true,
-                    command: 26 /* SETUSERCFG1_CMD */,
-                    detailCommand: 107 /* PM_GET_FORCEPLOTDATA */,
+                    command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
+                    detailCommand: 107 /* csafe.defs.PM_LONG_PULL_DATA_CMDS.PM_GET_FORCEPLOTDATA */,
                     data: [20],
                     onError: params.onError,
                     onDataReceived: function (data) {
@@ -2603,9 +2653,9 @@ var ergometer;
             buffer.getStrokeStats = function (params) {
                 buffer.addRawCommand({
                     waitForResponse: true,
-                    command: 26 /* SETUSERCFG1_CMD */,
+                    command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
                     data: [0],
-                    detailCommand: 110 /* CSAFE_PM_GET_STROKESTATS */,
+                    detailCommand: 110 /* csafe.defs.PM_LONG_PULL_DATA_CMDS.CSAFE_PM_GET_STROKESTATS */,
                     onError: params.onError,
                     onDataReceived: function (data) {
                         /*
@@ -2638,25 +2688,25 @@ var ergometer;
                 return buffer;
             };
         });
-        csafe.registerStandardGetConfig("getWorkoutType", 137 /* PM_GET_WORKOUTTYPE */, function (data) { return data.getUint8(0); });
-        csafe.registerStandardGetConfig("getWorkoutState", 141 /* PM_GET_WORKOUTSTATE */, function (data) { return data.getUint8(0); });
-        csafe.registerStandardGetConfig("getWorkoutIntervalCount", 159 /* PM_GET_WORKOUTINTERVALCOUNT */, function (data) { return data.getUint8(0); });
-        csafe.registerStandardGetConfig("getWorkoutIntervalType", 142 /* PM_GET_INTERVALTYPE */, function (data) { return data.getUint8(0); });
-        csafe.registerStandardGetConfig("getWorkoutIntervalRestTime", 207 /* PM_GET_RESTTIME */, function (data) { return data.getUint16(0, true); });
-        csafe.registerStandardGetConfig("getWork", 160 /* GETTWORK_CMD */, function (data) {
+        csafe.registerStandardGetConfig("getWorkoutType", 137 /* csafe.defs.PM_SHORT_PULL_CFG_CMDS.PM_GET_WORKOUTTYPE */, function (data) { return data.getUint8(0); });
+        csafe.registerStandardGetConfig("getWorkoutState", 141 /* csafe.defs.PM_SHORT_PULL_CFG_CMDS.PM_GET_WORKOUTSTATE */, function (data) { return data.getUint8(0); });
+        csafe.registerStandardGetConfig("getWorkoutIntervalCount", 159 /* csafe.defs.PM_SHORT_PULL_CFG_CMDS.PM_GET_WORKOUTINTERVALCOUNT */, function (data) { return data.getUint8(0); });
+        csafe.registerStandardGetConfig("getWorkoutIntervalType", 142 /* csafe.defs.PM_SHORT_PULL_CFG_CMDS.PM_GET_INTERVALTYPE */, function (data) { return data.getUint8(0); });
+        csafe.registerStandardGetConfig("getWorkoutIntervalRestTime", 207 /* csafe.defs.PM_SHORT_PULL_DATA_CMDS.PM_GET_RESTTIME */, function (data) { return data.getUint16(0, true); });
+        csafe.registerStandardGetConfig("getWork", 160 /* csafe.defs.SHORT_DATA_CMDS.GETTWORK_CMD */, function (data) {
             var result = data.getUint8(0) * 60 * 60 +
                 data.getUint8(1) * 60 +
                 data.getUint8(2);
             return result * 1000;
         });
-        csafe.registerStandardSet("setProgram", 36 /* SETPROGRAM_CMD */, function (params) { return [ergometer.utils.getByte(params.value, 0), 0]; });
-        csafe.registerStandardSet("setTime", 17 /* SETTIME_CMD */, function (params) { return [params.hour, params.minute, params.second]; });
-        csafe.registerStandardSet("setDate", 18 /* SETDATE_CMD */, function (params) { return [ergometer.utils.getByte(params.year, 0), params.month, params.day]; });
-        csafe.registerStandardSet("setTimeout", 19 /* SETTIMEOUT_CMD */, function (params) { return [params.value]; });
-        csafe.registerStandardSet("setWork", 32 /* SETTWORK_CMD */, function (params) { return [params.hour, params.minute, params.second]; });
-        csafe.registerStandardSet("setDistance", 33 /* SETHORIZONTAL_CMD */, function (params) { return [ergometer.utils.getByte(params.value, 0), ergometer.utils.getByte(params.value, 1), params.unit]; });
-        csafe.registerStandardSet("setTotalCalories", 35 /* SETCALORIES_CMD */, function (params) { return [ergometer.utils.getByte(params.value, 0), ergometer.utils.getByte(params.value, 1)]; });
-        csafe.registerStandardSet("setPower", 52 /* SETPOWER_CMD */, function (params) { return [ergometer.utils.getByte(params.value, 0), ergometer.utils.getByte(params.value, 1), params.unit]; });
+        csafe.registerStandardSet("setProgram", 36 /* csafe.defs.LONG_DATA_CMDS.SETPROGRAM_CMD */, function (params) { return [ergometer.utils.getByte(params.value, 0), 0]; });
+        csafe.registerStandardSet("setTime", 17 /* csafe.defs.LONG_CFG_CMDS.SETTIME_CMD */, function (params) { return [params.hour, params.minute, params.second]; });
+        csafe.registerStandardSet("setDate", 18 /* csafe.defs.LONG_CFG_CMDS.SETDATE_CMD */, function (params) { return [ergometer.utils.getByte(params.year, 0), params.month, params.day]; });
+        csafe.registerStandardSet("setTimeout", 19 /* csafe.defs.LONG_CFG_CMDS.SETTIMEOUT_CMD */, function (params) { return [params.value]; });
+        csafe.registerStandardSet("setWork", 32 /* csafe.defs.LONG_DATA_CMDS.SETTWORK_CMD */, function (params) { return [params.hour, params.minute, params.second]; });
+        csafe.registerStandardSet("setDistance", 33 /* csafe.defs.LONG_DATA_CMDS.SETHORIZONTAL_CMD */, function (params) { return [ergometer.utils.getByte(params.value, 0), ergometer.utils.getByte(params.value, 1), params.unit]; });
+        csafe.registerStandardSet("setTotalCalories", 35 /* csafe.defs.LONG_DATA_CMDS.SETCALORIES_CMD */, function (params) { return [ergometer.utils.getByte(params.value, 0), ergometer.utils.getByte(params.value, 1)]; });
+        csafe.registerStandardSet("setPower", 52 /* csafe.defs.LONG_DATA_CMDS.SETPOWER_CMD */, function (params) { return [ergometer.utils.getByte(params.value, 0), ergometer.utils.getByte(params.value, 1), params.unit]; });
     })(csafe = ergometer.csafe || (ergometer.csafe = {}));
 })(ergometer || (ergometer = {}));
 /**
@@ -2680,7 +2730,7 @@ var ergometer;
             buffer.getVersion = function (params) {
                 buffer.addRawCommand({
                     waitForResponse: true,
-                    command: 145 /* GETVERSION_CMD */,
+                    command: 145 /* defs.SHORT_STATUS_CMDS.GETVERSION_CMD */,
                     onDataReceived: function (data) {
                         if (params.onDataReceived)
                             params.onDataReceived({
@@ -2696,19 +2746,19 @@ var ergometer;
                 return buffer;
             };
         });
-        csafe.registerStandardShortGet("getDistance", 161 /* GETHORIZONTAL_CMD */, function (data) { return { value: data.getUint16(0, true), unit: data.getUint8(2) }; });
-        csafe.registerStandardShortGet("getPace", 166 /* GETPACE_CMD */, function (data) { return data.getUint16(0, true); });
-        csafe.registerStandardShortGet("getPower", 180 /* GETPOWER_CMD */, function (data) { return data.getUint16(0, true); });
-        csafe.registerStandardShortGet("getCadence", 167 /* GETCADENCE_CMD */, function (data) { return data.getUint16(0, true); });
-        csafe.registerStandardShortGet("getHorizontal", 161 /* GETHORIZONTAL_CMD */, function (data) {
+        csafe.registerStandardShortGet("getDistance", 161 /* csafe.defs.SHORT_DATA_CMDS.GETHORIZONTAL_CMD */, function (data) { return { value: data.getUint16(0, true), unit: data.getUint8(2) }; });
+        csafe.registerStandardShortGet("getPace", 166 /* csafe.defs.SHORT_DATA_CMDS.GETPACE_CMD */, function (data) { return data.getUint16(0, true); });
+        csafe.registerStandardShortGet("getPower", 180 /* csafe.defs.SHORT_DATA_CMDS.GETPOWER_CMD */, function (data) { return data.getUint16(0, true); });
+        csafe.registerStandardShortGet("getCadence", 167 /* csafe.defs.SHORT_DATA_CMDS.GETCADENCE_CMD */, function (data) { return data.getUint16(0, true); });
+        csafe.registerStandardShortGet("getHorizontal", 161 /* csafe.defs.SHORT_DATA_CMDS.GETHORIZONTAL_CMD */, function (data) {
             var value = data.getUint16(0, true);
             return value;
         });
-        csafe.registerStandardShortGet("getCalories", 163 /* GETCALORIES_CMD */, function (data) {
+        csafe.registerStandardShortGet("getCalories", 163 /* csafe.defs.SHORT_DATA_CMDS.GETCALORIES_CMD */, function (data) {
             var value = data.getUint16(0, true);
             return value;
         });
-        csafe.registerStandardShortGet("getHeartRate", 176 /* GETHRCUR_CMD */, function (data) {
+        csafe.registerStandardShortGet("getHeartRate", 176 /* csafe.defs.SHORT_DATA_CMDS.GETHRCUR_CMD */, function (data) {
             var value = data.getUint8(0);
             return value;
         });
@@ -2718,17 +2768,17 @@ var ergometer;
 (function (ergometer) {
     var csafe;
     (function (csafe) {
-        csafe.registerStandardProprietarySetConfig("setWorkoutType", 1 /* PM_SET_WORKOUTTYPE */, function (params) { return [ergometer.utils.getByte(params.value, 0)]; });
-        csafe.registerStandardProprietarySetConfig("setWorkoutDuration", 3 /* PM_SET_WORKOUTDURATION */, function (params) { return [params.durationType, ergometer.utils.getByte(params.value, 3), ergometer.utils.getByte(params.value, 2), ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
-        csafe.registerStandardProprietarySetConfig("setRestDuration", 4 /* PM_SET_RESTDURATION */, function (params) { return [ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
-        csafe.registerStandardProprietarySetConfig("setSplitDuration", 5 /* PM_SET_SPLITDURATION */, function (params) { return [params.durationType, ergometer.utils.getByte(params.value, 3), ergometer.utils.getByte(params.value, 2), ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
-        csafe.registerStandardProprietarySetConfig("setTargetPaceTime", 6 /* PM_SET_TARGETPACETIME */, function (params) { return [ergometer.utils.getByte(params.value, 3), ergometer.utils.getByte(params.value, 2), ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
-        csafe.registerStandardProprietarySetConfig("setScreenState", 19 /* PM_SET_SCREENSTATE */, function (params) { return [ergometer.utils.getByte(params.screenType, 0), ergometer.utils.getByte(params.value, 0)]; });
-        csafe.registerStandardProprietarySetConfig("setConfigureWorkout", 20 /* PM_CONFIGURE_WORKOUT */, function (params) { return [params.programmingMode ? 1 : 0]; });
-        csafe.registerStandardProprietarySetConfig("setTargetAverageWatt", 21 /* PM_SET_TARGETAVGWATTS */, function (params) { return [ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
-        csafe.registerStandardProprietarySetConfig("setTargetCaloriesPerHour", 22 /* PM_SET_TARGETCALSPERHR */, function (params) { return [ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
-        csafe.registerStandardProprietarySetConfig("setIntervalType", 23 /* PM_SET_INTERVALTYPE */, function (params) { return [params.value]; });
-        csafe.registerStandardProprietarySetConfig("setWorkoutIntervalCount", 24 /* PM_SET_WORKOUTINTERVALCOUNT */, function (params) { return [params.value]; });
+        csafe.registerStandardProprietarySetConfig("setWorkoutType", 1 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_WORKOUTTYPE */, function (params) { return [ergometer.utils.getByte(params.value, 0)]; });
+        csafe.registerStandardProprietarySetConfig("setWorkoutDuration", 3 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_WORKOUTDURATION */, function (params) { return [params.durationType, ergometer.utils.getByte(params.value, 3), ergometer.utils.getByte(params.value, 2), ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
+        csafe.registerStandardProprietarySetConfig("setRestDuration", 4 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_RESTDURATION */, function (params) { return [ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
+        csafe.registerStandardProprietarySetConfig("setSplitDuration", 5 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_SPLITDURATION */, function (params) { return [params.durationType, ergometer.utils.getByte(params.value, 3), ergometer.utils.getByte(params.value, 2), ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
+        csafe.registerStandardProprietarySetConfig("setTargetPaceTime", 6 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_TARGETPACETIME */, function (params) { return [ergometer.utils.getByte(params.value, 3), ergometer.utils.getByte(params.value, 2), ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
+        csafe.registerStandardProprietarySetConfig("setScreenState", 19 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_SCREENSTATE */, function (params) { return [ergometer.utils.getByte(params.screenType, 0), ergometer.utils.getByte(params.value, 0)]; });
+        csafe.registerStandardProprietarySetConfig("setConfigureWorkout", 20 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_CONFIGURE_WORKOUT */, function (params) { return [params.programmingMode ? 1 : 0]; });
+        csafe.registerStandardProprietarySetConfig("setTargetAverageWatt", 21 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_TARGETAVGWATTS */, function (params) { return [ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
+        csafe.registerStandardProprietarySetConfig("setTargetCaloriesPerHour", 22 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_TARGETCALSPERHR */, function (params) { return [ergometer.utils.getByte(params.value, 1), ergometer.utils.getByte(params.value, 0)]; });
+        csafe.registerStandardProprietarySetConfig("setIntervalType", 23 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_INTERVALTYPE */, function (params) { return [params.value]; });
+        csafe.registerStandardProprietarySetConfig("setWorkoutIntervalCount", 24 /* csafe.defs.PM_LONG_PUSH_CFG_CMDS.PM_SET_WORKOUTINTERVALCOUNT */, function (params) { return [params.value]; });
     })(csafe = ergometer.csafe || (ergometer.csafe = {}));
 })(ergometer || (ergometer = {}));
 /**
@@ -2791,7 +2841,7 @@ var ergometer;
             //over multiple messages
             this.command = 0;
             this.commandDataIndex = 0;
-            this.frameState = 0 /* initial */;
+            this.frameState = 0 /* FrameState.initial */;
             this.nextDataLength = 0;
             this.detailCommand = 0;
             this.statusByte = 0;
@@ -2821,7 +2871,7 @@ var ergometer;
             var _this = this;
             this._commands.forEach(function (command) {
                 if (_this._monitor.logLevel >= ergometer.LogLevel.error)
-                    _this._monitor.handleError("command removed without result command=" + command.command + " detail= " + command.detailCommand);
+                    _this._monitor.handleError("command removed without result command=".concat(command.command, " detail= ").concat(command.detailCommand));
                 if (command.onError)
                     command.onError("command removed without result");
             });
@@ -3103,7 +3153,7 @@ var ergometer;
                     //begin with a start byte ad end with a checksum and an end byte
                     var bytesToSend = ([ergometer.csafe.defs.FRAME_START_BYTE].concat(byteArray)).concat([checksum, ergometer.csafe.defs.FRAME_END_BYTE]);
                     if (_this._splitCommandsWhenToBig && bytesToSend.length > _this.getPacketSize())
-                        reject("Csafe commands with length " + bytesToSend.length + " does not fit into buffer with size " + _this.getPacketSize() + " ");
+                        reject("Csafe commands with length ".concat(bytesToSend.length, " does not fit into buffer with size ").concat(_this.getPacketSize(), " "));
                     else {
                         var sendBytesIndex = 0;
                         //continue while not all bytes are send
@@ -3180,13 +3230,13 @@ var ergometer;
                     }
                     //when stuffbyte is active then move to the next
                     if (!waitBuffer.stuffByteActive) {
-                        if (waitBuffer.frameState != 0 /* initial */) {
+                        if (waitBuffer.frameState != 0 /* FrameState.initial */) {
                             waitBuffer.calcCheck = waitBuffer.calcCheck ^ currentByte; //xor for a simple crc check
                         }
                         if (this.logLevel == ergometer.LogLevel.trace)
-                            this.traceInfo("parse: " + i + ": " + ergometer.utils.toHexString(currentByte, 1) + " state: " + waitBuffer.frameState + " checksum:" + ergometer.utils.toHexString(waitBuffer.calcCheck, 1) + " ");
+                            this.traceInfo("parse: ".concat(i, ": ").concat(ergometer.utils.toHexString(currentByte, 1), " state: ").concat(waitBuffer.frameState, " checksum:").concat(ergometer.utils.toHexString(waitBuffer.calcCheck, 1), " "));
                         switch (waitBuffer.frameState) {
-                            case 0 /* initial */: {
+                            case 0 /* FrameState.initial */: {
                                 //expect a start frame
                                 if (currentByte != ergometer.csafe.defs.FRAME_START_BYTE) {
                                     moveToNextBuffer = true;
@@ -3194,28 +3244,28 @@ var ergometer;
                                         this.traceInfo("stop byte " + ergometer.utils.toHexString(currentByte, 1));
                                 }
                                 else
-                                    waitBuffer.frameState = 1 /* statusByte */;
+                                    waitBuffer.frameState = 1 /* FrameState.statusByte */;
                                 waitBuffer.calcCheck = 0;
                                 break;
                             }
-                            case 1 /* statusByte */:
+                            case 1 /* FrameState.statusByte */:
                                 {
-                                    waitBuffer.frameState = 2 /* parseCommand */;
+                                    waitBuffer.frameState = 2 /* FrameState.parseCommand */;
                                     waitBuffer.statusByte = currentByte;
                                     waitBuffer.monitorStatus = currentByte & ergometer.csafe.defs.SLAVESTATE_MSK;
                                     waitBuffer.prevFrameState = ((currentByte & ergometer.csafe.defs.PREVFRAMESTATUS_MSK) >> 4);
                                     if (this.logLevel == ergometer.LogLevel.trace)
-                                        this.traceInfo("monitor status: " + waitBuffer.monitorStatus + ",prev frame state: " + waitBuffer.prevFrameState);
+                                        this.traceInfo("monitor status: ".concat(waitBuffer.monitorStatus, ",prev frame state: ").concat(waitBuffer.prevFrameState));
                                     waitBuffer._responseState = currentByte;
                                     break;
                                 }
-                            case 2 /* parseCommand */: {
+                            case 2 /* FrameState.parseCommand */: {
                                 waitBuffer.command = currentByte;
-                                waitBuffer.frameState = 3 /* parseCommandLength */;
+                                waitBuffer.frameState = 3 /* FrameState.parseCommandLength */;
                                 //the real command follows so skip this 
                                 break;
                             }
-                            case 3 /* parseCommandLength */: {
+                            case 3 /* FrameState.parseCommandLength */: {
                                 //first work arround strange results where the status byte is the same
                                 //as the the command and the frame directly ends, What is the meaning of
                                 //this? some kind of status??
@@ -3230,7 +3280,7 @@ var ergometer;
                                     waitBuffer.calcCheck = waitBuffer.calcCheck ^ waitBuffer.command;
                                     //check the calculated with the message checksum
                                     if (this._checksumCheckEnabled && checksum != waitBuffer.calcCheck)
-                                        this.handleError("Wrong checksum " + ergometer.utils.toHexString(checksum, 1) + " expected " + ergometer.utils.toHexString(waitBuffer.calcCheck, 1) + " ");
+                                        this.handleError("Wrong checksum ".concat(ergometer.utils.toHexString(checksum, 1), " expected ").concat(ergometer.utils.toHexString(waitBuffer.calcCheck, 1), " "));
                                     waitBuffer.command = 0; //do not check checksum
                                     moveToNextBuffer = true;
                                 }
@@ -3238,24 +3288,24 @@ var ergometer;
                                     waitBuffer.endCommand = i + currentByte;
                                     waitBuffer.nextDataLength = currentByte;
                                     if (waitBuffer.command >= ergometer.csafe.defs.CTRL_CMD_SHORT_MIN) {
-                                        waitBuffer.frameState = 6 /* parseCommandData */;
+                                        waitBuffer.frameState = 6 /* FrameState.parseCommandData */;
                                     }
                                     else
-                                        waitBuffer.frameState = 4 /* parseDetailCommand */;
+                                        waitBuffer.frameState = 4 /* FrameState.parseDetailCommand */;
                                 }
                                 break;
                             }
-                            case 4 /* parseDetailCommand */: {
+                            case 4 /* FrameState.parseDetailCommand */: {
                                 waitBuffer.detailCommand = currentByte;
-                                waitBuffer.frameState = 5 /* parseDetailCommandLength */;
+                                waitBuffer.frameState = 5 /* FrameState.parseDetailCommandLength */;
                                 break;
                             }
-                            case 5 /* parseDetailCommandLength */: {
+                            case 5 /* FrameState.parseDetailCommandLength */: {
                                 waitBuffer.nextDataLength = currentByte;
-                                waitBuffer.frameState = 6 /* parseCommandData */;
+                                waitBuffer.frameState = 6 /* FrameState.parseCommandData */;
                                 break;
                             }
-                            case 6 /* parseCommandData */: {
+                            case 6 /* FrameState.parseCommandData */: {
                                 if (!waitBuffer.commandData) {
                                     waitBuffer.commandDataIndex = 0;
                                     waitBuffer.commandData = new Uint8Array(waitBuffer.nextDataLength);
@@ -3266,9 +3316,9 @@ var ergometer;
                                 if (waitBuffer.nextDataLength == 0) {
                                     if (waitBuffer.command < ergometer.csafe.defs.CTRL_CMD_SHORT_MIN
                                         && i < waitBuffer.endCommand)
-                                        waitBuffer.frameState = 4 /* parseDetailCommand */;
+                                        waitBuffer.frameState = 4 /* FrameState.parseDetailCommand */;
                                     else
-                                        waitBuffer.frameState = 2 /* parseCommand */;
+                                        waitBuffer.frameState = 2 /* FrameState.parseCommand */;
                                     try {
                                         waitBuffer.receivedCSaveCommand({
                                             command: waitBuffer.command,
@@ -3293,7 +3343,7 @@ var ergometer;
                     //this is for blue tooth
                     if (moveToNextBuffer)
                         waitBuffer = this.moveToNextBuffer();
-                    else if (dataView.byteLength != this.getPacketSize() && waitBuffer && waitBuffer.frameState != 0 /* initial */) {
+                    else if (dataView.byteLength != this.getPacketSize() && waitBuffer && waitBuffer.frameState != 0 /* FrameState.initial */) {
                         waitBuffer = this.moveToNextBuffer();
                         this.handleError("wrong csafe frame ending.");
                     }
@@ -3412,10 +3462,10 @@ var ergometer;
     ergometer.StrokeData = StrokeData;
     var TrainingData = /** @class */ (function () {
         function TrainingData() {
-            this.duration = 0; //ms	
+            this.duration = 0; //ms
             this.distance = 0;
             this.workoutIntervalCount = 0;
-            this.intervalType = 255 /* none */;
+            this.intervalType = 255 /* IntervalType.none */;
             this.restTime = 0;
             this.endDistance = 0;
             this.endDuration = 0;
@@ -3423,11 +3473,11 @@ var ergometer;
         return TrainingData;
     }());
     ergometer.TrainingData = TrainingData;
-    ;
     var PerformanceMonitorUsb = /** @class */ (function (_super) {
         __extends(PerformanceMonitorUsb, _super);
-        function PerformanceMonitorUsb() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+        function PerformanceMonitorUsb(config) {
+            if (config === void 0) { config = ergometer.usb.DEFAULT_DRIVER_CONFIG; }
+            var _this = _super.call(this) || this;
             _this._nSPMReads = 0;
             _this._nSPM = 0;
             _this._strokeStateEvent = new ergometer.pubSub.Event();
@@ -3439,6 +3489,7 @@ var ergometer;
             _this._lastLowResUpdate = null;
             _this._autoUpdating = false;
             _this._startPhaseTime = 0;
+            _this._config = config;
             return _this;
         }
         Object.defineProperty(PerformanceMonitorUsb.prototype, "strokeData", {
@@ -3498,12 +3549,31 @@ var ergometer;
             return typeof navigator.hid != "undefined";
         };
         PerformanceMonitorUsb.canUseCordovaHid = function () {
-            return typeof cordova != "undefined" && typeof cordova.plugins != "undefined" && typeof cordova.plugins.UsbHid != "undefined";
+            return (typeof cordova != "undefined" &&
+                typeof cordova.plugins != "undefined" &&
+                typeof cordova.plugins.UsbHid != "undefined");
         };
         PerformanceMonitorUsb.canUseUsb = function () {
-            return PerformanceMonitorUsb.canUseNodeHid() ||
+            return (PerformanceMonitorUsb.canUseNodeHid() ||
                 PerformanceMonitorUsb.canUseWebHid() ||
-                PerformanceMonitorUsb.canUseCordovaHid();
+                PerformanceMonitorUsb.canUseCordovaHid());
+        };
+        PerformanceMonitorUsb.prototype.getDriverConfig = function () {
+            return this._config;
+        };
+        PerformanceMonitorUsb.prototype.setDriverConfig = function (config) {
+            // Merge the new vendor IDs with the default ones, ensuring Concept2's ID is included
+            var mergedConfig = {
+                vendorIds: Array.from(new Set(__spreadArray(__spreadArray([], ergometer.usb.DEFAULT_DRIVER_CONFIG.vendorIds, true), (config.vendorIds || []), true))),
+            };
+            this._config = mergedConfig;
+            if (this._driver && "setConfig" in this._driver) {
+                this._driver.setConfig(mergedConfig);
+            }
+            else {
+                // If we don't have a driver yet or need to reinitialize with new config
+                this.initDriver();
+            }
         };
         PerformanceMonitorUsb.prototype.initialize = function () {
             _super.prototype.initialize.call(this);
@@ -3513,13 +3583,13 @@ var ergometer;
         };
         PerformanceMonitorUsb.prototype.initDriver = function () {
             if (PerformanceMonitorUsb.canUseNodeHid()) {
-                this._driver = new ergometer.usb.DriverNodeHid();
+                this._driver = new ergometer.usb.DriverNodeHid(this._config);
             }
             else if (PerformanceMonitorUsb.canUseCordovaHid()) {
-                this._driver = new ergometer.usb.DriverCordovaHid();
+                this._driver = new ergometer.usb.DriverCordovaHid(this._config);
             }
             else if (PerformanceMonitorUsb.canUseWebHid()) {
-                this._driver = new ergometer.usb.DriverWebHid();
+                this._driver = new ergometer.usb.DriverWebHid(this._config);
             }
         };
         PerformanceMonitorUsb.prototype.checkInitDriver = function () {
@@ -3540,10 +3610,12 @@ var ergometer;
         });
         PerformanceMonitorUsb.prototype.driver_write = function (data) {
             var _this = this;
-            if (this.connectionState != ergometer.MonitorConnectionState.readyForCommunication)
+            if (this.connectionState !=
+                ergometer.MonitorConnectionState.readyForCommunication)
                 return Promise.reject("Can not write, erogmeter is not connected");
             return new Promise(function (resolve, reject) {
-                _this._device.sendData(data.buffer)
+                _this._device
+                    .sendData(data.buffer)
                     .then(resolve)
                     .catch(function (err) {
                     //the usb has not an disconnect event, assume an error is an disconnect
@@ -3557,22 +3629,26 @@ var ergometer;
         };
         PerformanceMonitorUsb.prototype.sendCSafeBuffer = function (csafeBuffer) {
             var _this = this;
-            if (this.connectionState != ergometer.MonitorConnectionState.readyForCommunication)
+            if (this.connectionState !=
+                ergometer.MonitorConnectionState.readyForCommunication)
                 return Promise.reject("can not send data, not connected");
             return new Promise(function (resolve, reject) {
-                if (_this.connectionState != ergometer.MonitorConnectionState.readyForCommunication)
+                if (_this.connectionState !=
+                    ergometer.MonitorConnectionState.readyForCommunication)
                     reject("can not send data, not connected");
                 //if buzy try again later, send receive one at a time
                 /*if (this.csafeSendBuzy) {
-                    return Promise.reject("can not send data, ergometer send is aready buzy");
-                }
-                else*/
+                            return Promise.reject("can not send data, ergometer send is aready buzy");
+                        }
+                        else*/
                 {
                     _this.traceInfo("send " + JSON.stringify(csafeBuffer.rawCommands));
                     //the send will resolve when all is received
-                    _super.prototype.sendCSafeBuffer.call(_this, csafeBuffer).then(function () {
+                    _super.prototype.sendCSafeBuffer.call(_this, csafeBuffer)
+                        .then(function () {
                         resolve();
-                    }).catch(function (e) {
+                    })
+                        .catch(function (e) {
                         _this.disconnected(); //the usb has not an disconnect event, assume an error is an disconnect
                         _this.handleError(e);
                         _this.traceInfo("end buzy");
@@ -3586,7 +3662,9 @@ var ergometer;
             return new Promise(function (resolve, reject) {
                 try {
                     _this.checkInitDriver();
-                    _this._driver.requestDevics().then(function (driverDevices) {
+                    _this._driver
+                        .requestDevics()
+                        .then(function (driverDevices) {
                         var result = [];
                         driverDevices.forEach(function (driverDevice) {
                             var device = new UsbDevice();
@@ -3598,7 +3676,8 @@ var ergometer;
                             result.push(device);
                         });
                         resolve(result);
-                    }).catch(reject);
+                    })
+                        .catch(reject);
                 }
                 catch (e) {
                     reject(e);
@@ -3646,36 +3725,42 @@ var ergometer;
                     onDataReceived: function (strokeState) {
                         // Update the stroke phase.
                         _this.newStrokeState(strokeState);
-                    }
+                    },
                 })
                     .send()
                     .then(function () {
+                    //send returns a promise
                     _this.traceInfo("end high res update");
                     if (_this.strokeState != previousStrokeState) {
                         // If this is the dwell, complete the power curve.
                         //if (_previousStrokePhase == StrokePhase_Drive)
                         var now = new Date().getTime();
-                        var doPowerCurveUpdate = _this.strokeState == 4 /* recoveryState */;
+                        var doPowerCurveUpdate = _this.strokeState == 4 /* StrokeState.recoveryState */;
                         if (doPowerCurveUpdate ||
                             _this._lastLowResUpdate == null ||
-                            (!_this.isWaiting && (now - _this._lastLowResUpdate) > WAIT_TIME_LOW_RES)) {
+                            (!_this.isWaiting &&
+                                now - _this._lastLowResUpdate > WAIT_TIME_LOW_RES)) {
                             _this._lastLowResUpdate = now;
                             _this.traceInfo("Start low res update");
-                            _this.lowResolutionUpdate().then(function () {
+                            _this.lowResolutionUpdate()
+                                .then(function () {
                                 if (doPowerCurveUpdate && _this.powerCurveEvent.count > 0) {
                                     _this.traceInfo("start power curveupdate");
-                                    _this.handlePowerCurve().then(function () {
+                                    _this.handlePowerCurve()
+                                        .then(function () {
                                         _this.traceInfo("end power curve and end low res update");
                                         _this.traceInfo("resolve high");
                                         resolve();
-                                    }).catch(reject);
+                                    })
+                                        .catch(reject);
                                 }
                                 else {
                                     _this.traceInfo("end low res update");
                                     _this.traceInfo("resolve high");
                                     resolve();
                                 }
-                            }).catch(reject);
+                            })
+                                .catch(reject);
                         }
                         else {
                             _this.traceInfo("resolve high");
@@ -3697,7 +3782,7 @@ var ergometer;
                 onDataReceived: function (curve) {
                     _this.powerCurveEvent.pub(curve);
                     _this._powerCurve = curve;
-                }
+                },
             })
                 .send();
         };
@@ -3718,23 +3803,26 @@ var ergometer;
             this.traceInfo("auto update :" + first);
             //check on start if any one is listening, if not then
             //do not start the auto updating llop
-            if (first && (this.strokeStateEvent.count == 0 &&
+            if (first &&
+                this.strokeStateEvent.count == 0 &&
                 this.trainingDataEvent.count == 0 &&
-                this.strokeStateEvent.count == 0))
+                this.strokeStateEvent.count == 0)
                 return;
-            //preventing starting update twice 
+            //preventing starting update twice
             //and stop when not connected any more
-            if (this.connectionState == ergometer.MonitorConnectionState.readyForCommunication
-                && (!first || !this._autoUpdating)) {
+            if (this.connectionState == ergometer.MonitorConnectionState.readyForCommunication &&
+                (!first || !this._autoUpdating)) {
                 this._autoUpdating = true;
                 //do not update while an csafe read write action is active
                 //it is possible but you can get unexpected results because it may
                 //change the order of things
                 //ensure that allways an next update is called
                 try {
-                    this.update().then(function () {
+                    this.update()
+                        .then(function () {
                         _this.nextAutoUpdate();
-                    }).catch(function (error) {
+                    })
+                        .catch(function (error) {
                         _this.handleError(error);
                         _this.nextAutoUpdate();
                     });
@@ -3750,20 +3838,24 @@ var ergometer;
             }
         };
         PerformanceMonitorUsb.prototype.isWaiting = function () {
-            var waitingStates = [0 /* waitToBegin */,
-                10 /* workoutEnd */,
-                11 /* terminate */,
-                12 /* workoutLogged */,
-                13 /* rearm */];
-            return (this.strokeState == 0 /* waitingForWheelToReachMinSpeedState */)
-                && waitingStates.indexOf(this.trainingData.workoutState) >= 0;
+            var waitingStates = [
+                0 /* WorkoutState.waitToBegin */,
+                10 /* WorkoutState.workoutEnd */,
+                11 /* WorkoutState.terminate */,
+                12 /* WorkoutState.workoutLogged */,
+                13 /* WorkoutState.rearm */,
+            ];
+            return (this.strokeState == 1 /* StrokeState.waitingForWheelToAccelerateState */ &&
+                waitingStates.indexOf(this.trainingData.workoutState) >= 0);
         };
         PerformanceMonitorUsb.prototype.nextAutoUpdate = function () {
             var _this = this;
             this.traceInfo("nextAutoUpdate");
             var waitTime = this.isWaiting() ? WAIT_TIME_INIT : WAIT_TIME_MEASURING;
             if (this.connectionState == ergometer.MonitorConnectionState.readyForCommunication) {
-                setTimeout(function () { _this.autoUpdate(false); }, waitTime);
+                setTimeout(function () {
+                    _this.autoUpdate(false);
+                }, waitTime);
             }
             else
                 this._autoUpdating = false;
@@ -3771,12 +3863,15 @@ var ergometer;
         PerformanceMonitorUsb.prototype.update = function () {
             var _this = this;
             return new Promise(function (resolve, reject) {
-                _this.highResolutionUpdate().then(function () {
+                _this.highResolutionUpdate()
+                    .then(function () {
                     var currenttime = new Date().getTime();
                     var diff = currenttime - _this._lastTrainingTime; //note _lastTraingTime is initialized in trainingDataUpdate, which is called in the begining
                     //when work out is buzy update every second, before update every 200 ms
-                    if ((_this.trainingData.workoutState != 1 /* workoutRow */ && diff > 200) ||
-                        (_this.trainingData.workoutState == 1 /* workoutRow */ && diff > 1000)) {
+                    if ((_this.trainingData.workoutState != 1 /* WorkoutState.workoutRow */ &&
+                        diff > 200) ||
+                        (_this.trainingData.workoutState == 1 /* WorkoutState.workoutRow */ &&
+                            diff > 1000)) {
                         _this.traceInfo("start training update");
                         _this.trainingDataUpdate().then(function () {
                             _this.traceInfo("resolved training update");
@@ -3785,39 +3880,40 @@ var ergometer;
                     }
                     else
                         resolve();
-                }).catch(reject);
+                })
+                    .catch(reject);
             });
         };
         PerformanceMonitorUsb.prototype.calcStrokeStateDuration = function () {
             var duration = 0;
-            if (this.strokeState == 4 /* recoveryState */ ||
-                this.strokeState == 2 /* drivingState */) {
+            if (this.strokeState == 4 /* StrokeState.recoveryState */ ||
+                this.strokeState == 2 /* StrokeState.drivingState */) {
                 var endPhase = new Date().getTime();
                 duration = endPhase - this._startPhaseTime;
                 this._startPhaseTime = endPhase;
             }
-            if (this.strokeState == 1 /* waitingForWheelToAccelerateState */ ||
-                this.strokeState == 0 /* waitingForWheelToReachMinSpeedState */) {
+            if (this.strokeState == 1 /* StrokeState.waitingForWheelToAccelerateState */ ||
+                this.strokeState == 0 /* StrokeState.waitingForWheelToReachMinSpeedState */) {
                 this._startPhaseTime = new Date().getTime();
             }
             return duration;
         };
         PerformanceMonitorUsb.prototype.lowResolutionUpdate = function () {
             var _this = this;
-            return this.newCsafeBuffer()
+            return (this.newCsafeBuffer()
                 .getDragFactor({
                 onDataReceived: function (value) {
                     _this.strokeData.dragFactor = value;
-                }
+                },
             })
                 .getWorkDistance({
                 onDataReceived: function (value) {
                     _this.strokeData.workDistance = value;
-                }
+                },
             })
                 /*.getWork({onDataReceived: (value) => {
-                     this.strokeData.time=value;
-                }})*/
+                       this.strokeData.time=value;
+                  }})*/
                 .getPace({
                 onDataReceived: function (pace) {
                     var caloriesPerHour = 0;
@@ -3825,18 +3921,18 @@ var ergometer;
                     if (pace > 0) {
                         //get cal/hr: Calories/Hr = (((2.8 / ( pace * pace * pace )) * ( 4.0 * 0.8604)) + 300.0)
                         var paced = pace / 1000.0; // formular needs pace in sec/m (not sec/km)
-                        caloriesPerHour = Math.round(((2.8 / (paced * paced * paced)) * (4.0 * 0.8604)) + 300.0);
+                        caloriesPerHour = Math.round((2.8 / (paced * paced * paced)) * (4.0 * 0.8604) + 300.0);
                     }
                     _this.strokeData.caloriesPerHour = caloriesPerHour;
-                    // get pace in seconds / 500m           
+                    // get pace in seconds / 500m
                     var fPace = pace / 2.0;
                     _this.strokeData.splitTime = fPace * 1000; //from seconds to ms
-                }
+                },
             })
                 .getCalories({
                 onDataReceived: function (value) {
                     _this.strokeData.totCalories = value;
-                }
+                },
             })
                 .getCadence({
                 onDataReceived: function (value) {
@@ -3844,29 +3940,30 @@ var ergometer;
                         _this._nSPM += value;
                         _this._nSPMReads++;
                         _this.strokeData.strokesPerMinute = value;
-                        _this.strokeData.strokesPerMinuteAverage = _this._nSPM / _this._nSPMReads;
+                        _this.strokeData.strokesPerMinuteAverage =
+                            _this._nSPM / _this._nSPMReads;
                     }
-                }
+                },
             })
                 .getPower({
                 onDataReceived: function (value) {
                     _this.strokeData.power = value;
-                }
+                },
             })
                 .getWorkTime({
                 onDataReceived: function (value) {
                     _this.strokeData.workTime = value;
-                }
+                },
             })
                 .getHorizontal({
                 onDataReceived: function (value) {
                     _this.strokeData.distance = value;
-                }
+                },
             })
                 .getHeartRate({
                 onDataReceived: function (value) {
                     _this.strokeData.heartRate = value;
-                }
+                },
             })
                 .getStrokeStats({
                 onDataReceived: function (strokeDistance, driveTime, strokeRecoveryTime, strokeCount) {
@@ -3875,19 +3972,19 @@ var ergometer;
                     _this.strokeData.strokeRecoveryTime = strokeRecoveryTime;
                     _this.strokeData.strokeCount = strokeCount;
                     _this.strokeDataEvent.pub(_this.strokeData);
-                }
+                },
             })
                 .send()
                 .then(function () {
                 /*console.log({
-                    workTime:this.strokeData.workTime,
-                    distance:this.strokeData.distance ,
-                    workDistance: this.strokeData.workDistance
-
-                });*/
+                        workTime:this.strokeData.workTime,
+                        distance:this.strokeData.distance ,
+                        workDistance: this.strokeData.workDistance
+    
+                    });*/
                 _this.traceInfo("after low res update");
                 _this.strokeDataEvent.pub(_this.strokeData);
-            });
+            }));
         };
         PerformanceMonitorUsb.prototype.newStrokeState = function (state) {
             if (state != this.strokeState) {
@@ -3907,60 +4004,78 @@ var ergometer;
             var duration = 0;
             var distance = 0;
             return this.newCsafeBuffer()
-                .getWorkoutType({ onDataReceived: function (value) {
+                .getWorkoutType({
+                onDataReceived: function (value) {
                     if (_this.trainingData.workoutType != value) {
                         _this.trainingData.workoutType = value;
                         changed = true;
                     }
-                } })
-                .getWorkoutState({ onDataReceived: function (value) {
+                },
+            })
+                .getWorkoutState({
+                onDataReceived: function (value) {
                     if (_this.trainingData.workoutState != value) {
                         _this.trainingData.workoutState = value;
                         changed = true;
                     }
-                } })
-                .getWorkoutIntervalCount({ onDataReceived: function (value) {
+                },
+            })
+                .getWorkoutIntervalCount({
+                onDataReceived: function (value) {
                     if (_this.trainingData.workoutIntervalCount != value) {
                         _this.trainingData.workoutIntervalCount = value;
                         changed = true;
                     }
-                } })
-                .getWorkoutIntervalType({ onDataReceived: function (value) {
+                },
+            })
+                .getWorkoutIntervalType({
+                onDataReceived: function (value) {
                     if (_this.trainingData.intervalType != value) {
                         _this.trainingData.intervalType = value;
                         changed = true;
                     }
-                } })
-                .getWorkoutIntervalRestTime({ onDataReceived: function (value) {
+                },
+            })
+                .getWorkoutIntervalRestTime({
+                onDataReceived: function (value) {
                     if (_this.trainingData.restTime != value) {
                         _this.trainingData.restTime = value;
                         changed = true;
                     }
-                } })
-                .getWorkTime({ onDataReceived: function (value) {
+                },
+            })
+                .getWorkTime({
+                onDataReceived: function (value) {
                     duration = value;
-                } })
-                .getWorkDistance({ onDataReceived: function (value) {
+                },
+            })
+                .getWorkDistance({
+                onDataReceived: function (value) {
                     distance = value;
-                } })
-                .getWork({ onDataReceived: function (value) {
+                },
+            })
+                .getWork({
+                onDataReceived: function (value) {
                     actualTime = value;
-                } })
-                .getHorizontal({ onDataReceived: function (value) {
+                },
+            })
+                .getHorizontal({
+                onDataReceived: function (value) {
                     actualDistance = value;
-                } })
+                },
+            })
                 .send()
                 .then(function () {
                 /* console.log({
-                     duration:duration,
-                     distance:distance,
-                     actualTime:actualTime,
-                     actualDistance:actualDistance,
-                     workoutState:this.trainingData.workoutState
-                 });*/
+                              duration:duration,
+                              distance:distance,
+                              actualTime:actualTime,
+                              actualDistance:actualDistance,
+                              workoutState:this.trainingData.workoutState
+                          });*/
                 //total time and distance can be changed because the rower is rowing.
                 //the work time and work distance should be 0 for initial change
-                if (_this.strokeState <= 1 /* waitingForWheelToAccelerateState */ &&
+                if (_this.strokeState <= 1 /* StrokeState.waitingForWheelToAccelerateState */ &&
                     actualDistance == 0) {
                     //we are here just before the rower starts, if there are still values
                     //of the previous race, then reset
@@ -3982,13 +4097,16 @@ var ergometer;
                 //if (_trainingData.workoutState==wsWorkoutLogged) {
                 //    _trainingData.endDuration=_trainingData.endDuration;
                 //}
-                if (_this.trainingData.workoutState == 12 /* workoutLogged */ &&
-                    ((_this.trainingData.endDuration === 0) &&
-                        (_this.trainingData.endDistance === 0))) {
+                if (_this.trainingData.workoutState == 12 /* WorkoutState.workoutLogged */ &&
+                    _this.trainingData.endDuration === 0 &&
+                    _this.trainingData.endDistance === 0) {
                     //otherwise the work time does not reflect the last time and distance
-                    if (_this.trainingData.workoutType >= 2 /* fixedDistanceNoAplits */ &&
-                        _this.trainingData.workoutType <= 5 /* fixedTimeSplits */) {
-                        if (_this.trainingData.duration && _this.trainingData.duration > 0) { //doing an fixed time
+                    if (_this.trainingData.workoutType >=
+                        2 /* WorkoutType.fixedDistanceNoAplits */ &&
+                        _this.trainingData.workoutType <= 5 /* WorkoutType.fixedTimeSplits */) {
+                        if (_this.trainingData.duration &&
+                            _this.trainingData.duration > 0) {
+                            //doing an fixed time
                             _this.strokeData.workTime = _this.trainingData.duration;
                             _this.strokeData.workDistance = distance;
                             //this.strokeData.time=duration;
@@ -3997,7 +4115,8 @@ var ergometer;
                             _this.trainingData.endDuration = _this.trainingData.duration;
                             //console.log("Fixed time Send stroke state and training");
                         }
-                        else if (_this.trainingData.distance > 0) { //doing a fixed distance
+                        else if (_this.trainingData.distance > 0) {
+                            //doing a fixed distance
                             _this.strokeData.workTime = duration;
                             _this.strokeData.workDistance = 0;
                             //this.strokeData.time=duration;
@@ -4010,9 +4129,11 @@ var ergometer;
                     }
                     changed = true;
                 }
-                if (_this.trainingData.workoutState != 12 /* workoutLogged */ &&
-                    (_this.trainingData.endDistance || _this.trainingData.endDistance != 0 ||
-                        _this.trainingData.endDuration != 0 || _this.trainingData.endDuration)) {
+                if (_this.trainingData.workoutState != 12 /* WorkoutState.workoutLogged */ &&
+                    (_this.trainingData.endDistance ||
+                        _this.trainingData.endDistance != 0 ||
+                        _this.trainingData.endDuration != 0 ||
+                        _this.trainingData.endDuration)) {
                     _this.trainingData.endDistance = 0;
                     _this.trainingData.endDuration = 0;
                     changed = true;
@@ -4028,7 +4149,7 @@ var ergometer;
             this._nSPM = 0;
             this._nSPMReads = 0;
             this.strokeData.dragFactor = 0;
-            //this.strokeData.workDistance =0 ; 
+            //this.strokeData.workDistance =0 ;
             //this.strokeData.workTime =0;
             this.strokeData.splitTime = 0;
             this.strokeData.power = 0;
@@ -4127,7 +4248,7 @@ var ergometer;
             _this._devices = [];
             _this._multiplex = false;
             _this._multiplexSubscribeCount = 0;
-            _this._sampleRate = 1 /* rate500ms */;
+            _this._sampleRate = 1 /* SampleRate.rate500ms */;
             //disabled the auto reconnect, because it reconnects while the connection on the device is switched off
             //this causes some strange state on the device which breaks communcation after reconnecting
             _this._autoReConnect = false;
@@ -4547,7 +4668,8 @@ var ergometer;
                 if (value != this._sampleRate) {
                     var dataView = new DataView(new ArrayBuffer(1));
                     dataView.setUint8(0, value);
-                    this.driver.writeCharacteristic(ergometer.ble.PMROWING_SERVICE, ergometer.ble.ROWING_STATUS_SAMPLE_RATE_CHARACTERISIC, dataView)
+                    this.driver
+                        .writeCharacteristic(ergometer.ble.PMROWING_SERVICE, ergometer.ble.ROWING_STATUS_SAMPLE_RATE_CHARACTERISIC, dataView)
                         .then(function () {
                         _this._sampleRate = value;
                     }, this.getErrorHandlerFunc("Can not set sample rate"));
@@ -4575,8 +4697,9 @@ var ergometer;
             var _this = this;
             var result;
             if (this._multiplexSubscribeCount == 0)
-                result = this.enableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.MULTIPLEXED_INFO_CHARACTERISIC, function (data) { _this.handleDataCallbackMulti(data); })
-                    .catch(this.getErrorHandlerFunc("Can not enable multiplex"));
+                result = this.enableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.MULTIPLEXED_INFO_CHARACTERISIC, function (data) {
+                    _this.handleDataCallbackMulti(data);
+                }).catch(this.getErrorHandlerFunc("Can not enable multiplex"));
             else
                 result = Promise.resolve();
             this._multiplexSubscribeCount++;
@@ -4589,8 +4712,7 @@ var ergometer;
             var result;
             this._multiplexSubscribeCount--;
             if (this._multiplexSubscribeCount == 0)
-                result = this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.MULTIPLEXED_INFO_CHARACTERISIC)
-                    .catch(this.getErrorHandlerFunc("can not disable multiplex"));
+                result = this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.MULTIPLEXED_INFO_CHARACTERISIC).catch(this.getErrorHandlerFunc("can not disable multiplex"));
             else
                 result = Promise.resolve();
             return result;
@@ -4632,8 +4754,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.ROWING_STATUS_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.ROWING_STATUS_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.rowingAdditionalStatus1Event.count > 0) {
                     if (this.multiplex) {
@@ -4647,8 +4768,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_STATUS1_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_STATUS1_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.rowingAdditionalStatus2Event.count > 0) {
                     if (this.multiplex) {
@@ -4662,8 +4782,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_STATUS2_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_STATUS2_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.rowingStrokeDataEvent.count > 0) {
                     if (this.multiplex) {
@@ -4677,8 +4796,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.STROKE_DATA_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.STROKE_DATA_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.rowingAdditionalStrokeDataEvent.count > 0) {
                     if (this.multiplex) {
@@ -4692,8 +4810,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_STROKE_DATA_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_STROKE_DATA_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.rowingSplitIntervalDataEvent.count > 0) {
                     if (this.multiplex) {
@@ -4707,8 +4824,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.SPLIT_INTERVAL_DATA_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.SPLIT_INTERVAL_DATA_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.rowingAdditionalSplitIntervalDataEvent.count > 0) {
                     if (this.multiplex) {
@@ -4722,8 +4838,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_SPLIT_INTERVAL_DATA_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_SPLIT_INTERVAL_DATA_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.workoutSummaryDataEvent.count > 0) {
                     if (this.multiplex) {
@@ -4737,8 +4852,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.ROWING_SUMMARY_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.ROWING_SUMMARY_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.additionalWorkoutSummaryDataEvent.count > 0) {
                     if (this.multiplex) {
@@ -4752,8 +4866,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_ROWING_SUMMARY_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.EXTRA_ROWING_SUMMARY_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.additionalWorkoutSummaryData2Event.count > 0) {
                     if (this.multiplex) {
@@ -4773,8 +4886,7 @@ var ergometer;
                 }
                 else {
                     if (!this.multiplex)
-                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.HEART_RATE_BELT_INFO_CHARACTERISIC)
-                            .catch(this.getErrorHandlerFunc("")));
+                        promises.push(this.disableNotification(ergometer.ble.PMROWING_SERVICE, ergometer.ble.HEART_RATE_BELT_INFO_CHARACTERISIC).catch(this.getErrorHandlerFunc("")));
                 }
                 if (this.powerCurveEvent.count > 0) {
                     //when the status changes collect the power info
@@ -4804,17 +4916,18 @@ var ergometer;
         PerformanceMonitorBle.prototype.onPowerCurveRowingGeneralStatus = function (data) {
             var _this = this;
             if (this.logLevel >= ergometer.LogLevel.trace)
-                this.traceInfo('RowingGeneralStatus:' + JSON.stringify(data));
+                this.traceInfo("RowingGeneralStatus:" + JSON.stringify(data));
             //test to receive the power curve
-            if (this.rowingGeneralStatus && this.rowingGeneralStatus.strokeState != data.strokeState) {
-                if (data.strokeState == 4 /* recoveryState */) {
+            if (this.rowingGeneralStatus &&
+                this.rowingGeneralStatus.strokeState != data.strokeState) {
+                if (data.strokeState == 4 /* StrokeState.recoveryState */) {
                     //send a power curve request
                     this.newCsafeBuffer()
                         .getPowerCurve({
                         onDataReceived: function (curve) {
                             _this.powerCurveEvent.pub(curve);
                             _this._powerCurve = curve;
-                        }
+                        },
                     })
                         .send();
                 }
@@ -4825,13 +4938,19 @@ var ergometer;
         };
         PerformanceMonitorBle.prototype.initDriver = function () {
             if (bleCentral.available())
-                this._driver = new bleCentral.DriverBleCentral([ergometer.ble.PMDEVICE]);
-            else if ((typeof bleat !== 'undefined') && bleat)
+                this._driver = new bleCentral.DriverBleCentral([
+                    ergometer.ble.PMDEVICE,
+                ]);
+            else if (typeof bleat !== "undefined" && bleat)
                 this._driver = new ergometer.ble.DriverBleat();
-            else if ((typeof simpleBLE !== 'undefined') && simpleBLE)
+            else if (typeof simpleBLE !== "undefined" && simpleBLE)
                 this._driver = new ergometer.ble.DriverSimpleBLE();
             else if (ergometer.ble.hasWebBlueTooth())
-                this._driver = new ergometer.ble.DriverWebBlueTooth(this, [ergometer.ble.PMDEVICE], [ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.PMCONTROL_SERVICE, ergometer.ble.PMROWING_SERVICE]);
+                this._driver = new ergometer.ble.DriverWebBlueTooth(this, [ergometer.ble.PMDEVICE], [
+                    ergometer.ble.PMDEVICE_INFO_SERVICE,
+                    ergometer.ble.PMCONTROL_SERVICE,
+                    ergometer.ble.PMROWING_SERVICE,
+                ]);
             else
                 this.handleError("No suitable blue tooth driver found to connect to the ergometer. You need to load bleat on native platforms and a browser with web blue tooth capability.");
         };
@@ -4850,48 +4969,60 @@ var ergometer;
             this._splitCommandsWhenToBig = true;
             this._receivePartialBuffers = true;
             /*document.addEventListener(
-                'deviceready',
-                 ()=> {
-                     evothings.scriptsLoaded(()=>{
-                         this.onDeviceReady();})},
-                false);   */
+                      'deviceready',
+                       ()=> {
+                           evothings.scriptsLoaded(()=>{
+                               this.onDeviceReady();})},
+                      false);   */
             this.initDriver();
-            var enableDisableFunc = function () { _this.enableDisableNotification().catch(_this.handleError); };
-            this._rowingGeneralStatusEvent = new ergometer.pubSub.Event();
+            var enableDisableFunc = function () {
+                _this.enableDisableNotification().catch(_this.handleError);
+            };
+            this._rowingGeneralStatusEvent =
+                new ergometer.pubSub.Event();
             this.rowingGeneralStatusEvent.registerChangedEvent(enableDisableFunc);
-            this._rowingAdditionalStatus1Event = new ergometer.pubSub.Event();
+            this._rowingAdditionalStatus1Event =
+                new ergometer.pubSub.Event();
             this.rowingAdditionalStatus1Event.registerChangedEvent(enableDisableFunc);
-            this._rowingAdditionalStatus2Event = new ergometer.pubSub.Event();
+            this._rowingAdditionalStatus2Event =
+                new ergometer.pubSub.Event();
             this.rowingAdditionalStatus2Event.registerChangedEvent(enableDisableFunc);
             this._rowingStrokeDataEvent = new ergometer.pubSub.Event();
             this.rowingStrokeDataEvent.registerChangedEvent(enableDisableFunc);
-            this._rowingAdditionalStrokeDataEvent = new ergometer.pubSub.Event();
+            this._rowingAdditionalStrokeDataEvent =
+                new ergometer.pubSub.Event();
             this.rowingAdditionalStrokeDataEvent.registerChangedEvent(enableDisableFunc);
-            this._rowingSplitIntervalDataEvent = new ergometer.pubSub.Event();
+            this._rowingSplitIntervalDataEvent =
+                new ergometer.pubSub.Event();
             this.rowingSplitIntervalDataEvent.registerChangedEvent(enableDisableFunc);
-            this._rowingAdditionalSplitIntervalDataEvent = new ergometer.pubSub.Event();
+            this._rowingAdditionalSplitIntervalDataEvent =
+                new ergometer.pubSub.Event();
             this.rowingAdditionalSplitIntervalDataEvent.registerChangedEvent(enableDisableFunc);
-            this._workoutSummaryDataEvent = new ergometer.pubSub.Event();
+            this._workoutSummaryDataEvent =
+                new ergometer.pubSub.Event();
             this.workoutSummaryDataEvent.registerChangedEvent(enableDisableFunc);
-            this._additionalWorkoutSummaryDataEvent = new ergometer.pubSub.Event();
+            this._additionalWorkoutSummaryDataEvent =
+                new ergometer.pubSub.Event();
             this.additionalWorkoutSummaryDataEvent.registerChangedEvent(enableDisableFunc);
-            this._additionalWorkoutSummaryData2Event = new ergometer.pubSub.Event();
+            this._additionalWorkoutSummaryData2Event =
+                new ergometer.pubSub.Event();
             this.additionalWorkoutSummaryData2Event.registerChangedEvent(enableDisableFunc);
-            this._heartRateBeltInformationEvent = new ergometer.pubSub.Event();
+            this._heartRateBeltInformationEvent =
+                new ergometer.pubSub.Event();
             this.heartRateBeltInformationEvent.registerChangedEvent(enableDisableFunc);
         };
         /**
          * When low level initialization complete, this function is called.
          */
         /*
-        protected onDeviceReady() {
-            // Report status.
-           this.changeConnectionState( MonitorConnectionState.deviceReady);
-            if (this._active)
-              this.startConnection();
-
-        }
-        */
+            protected onDeviceReady() {
+                // Report status.
+               this.changeConnectionState( MonitorConnectionState.deviceReady);
+                if (this._active)
+                  this.startConnection();
+    
+            }
+            */
         /**
          *
          * @param device
@@ -4909,7 +5040,9 @@ var ergometer;
                 this.removeDevice(existing);
             this._devices.push(device);
             //sort on hightest quality above
-            this._devices.sort(function (device1, device2) { return device2.quality - device1.quality; });
+            this._devices.sort(function (device1, device2) {
+                return device2.quality - device1.quality;
+            });
         };
         /**
          *
@@ -4948,35 +5081,40 @@ var ergometer;
                 this.changeConnectionState(ergometer.MonitorConnectionState.scanning);
                 // Only report s once.
                 //evothings.easyble.reportDeviceOnce(true);
-                return this.driver.startScan(function (device) {
+                return this.driver
+                    .startScan(function (device) {
                     // Do not show un-named devices.
                     /*var deviceName = device.advertisementData ?
-                     device.advertisementData.kCBAdvDataLocalName : null;
-                     */
+                                 device.advertisementData.kCBAdvDataLocalName : null;
+                                 */
                     if (!device.name) {
                         return;
                     }
                     // Print "name : mac address" for every device found.
-                    _this.debugInfo(device.name + ' : ' + device.address.toString().split(':').join(''));
+                    _this.debugInfo(device.name +
+                        " : " +
+                        device.address.toString().split(":").join(""));
                     // If my device is found connect to it.
                     //find any thing starting with PM and then a number a space and a serial number
                     if (device.name.match(/PM\d \d*/g)) {
-                        _this.showInfo('Status: DeviceInfo found: ' + device.name);
+                        _this.showInfo("Status: DeviceInfo found: " + device.name);
                         var deviceInfo = {
                             connected: false,
                             _internalDevice: device,
                             name: device.name,
                             address: device.address,
-                            quality: 2 * (device.rssi + 100)
+                            quality: 2 * (device.rssi + 100),
                         };
                         _this.addDevice(deviceInfo);
                         if (deviceFound && deviceFound(deviceInfo)) {
                             _this.connectToDevice(deviceInfo.name);
                         }
                     }
-                }).then(function () {
-                    _this.showInfo('Status: Scanning...');
-                }).catch(this.getErrorHandlerFunc("Scan error", function (e) {
+                })
+                    .then(function () {
+                    _this.showInfo("Status: Scanning...");
+                })
+                    .catch(this.getErrorHandlerFunc("Scan error", function (e) {
                     if (errorFn)
                         errorFn(e);
                     if (_this.connectionState < ergometer.MonitorConnectionState.connected)
@@ -4997,16 +5135,17 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.connectToDevice = function (deviceName) {
             var _this = this;
-            this.showInfo('Status: Connecting...');
+            this.showInfo("Status: Connecting...");
             this.stopScan();
             this.changeConnectionState(ergometer.MonitorConnectionState.connecting);
             var deviceInfo = this.findDevice(deviceName);
             if (!deviceInfo)
-                throw "Device " + deviceName + " not found";
+                throw "Device ".concat(deviceName, " not found");
             this._deviceInfo = deviceInfo;
-            return this.driver.connect(deviceInfo._internalDevice, function () {
+            return this.driver
+                .connect(deviceInfo._internalDevice, function () {
                 _this.changeConnectionState(ergometer.MonitorConnectionState.deviceReady);
-                _this.showInfo('Disconnected');
+                _this.showInfo("Disconnected");
                 if (_this.autoReConnect && !_this.currentDriverIsWebBlueTooth()) {
                     //do not auto connect too quick otherwise it will reconnect when
                     //the device has triggered a disconenct and it will end up half disconnected
@@ -5016,15 +5155,18 @@ var ergometer;
                         });
                     }, 2000);
                 }
-            }).then(function () {
+            })
+                .then(function () {
                 _this.changeConnectionState(ergometer.MonitorConnectionState.connected);
-                _this.showInfo('Status: Connected');
+                _this.showInfo("Status: Connected");
                 return _this.readPheripheralInfo();
-            }).then(function () {
+            })
+                .then(function () {
                 // Debug logging of all services, characteristics and descriptors
                 // reported by the BLE board.
                 _this.deviceConnected();
-            }).catch(function (errorCode) {
+            })
+                .catch(function (errorCode) {
                 _this.changeConnectionState(ergometer.MonitorConnectionState.deviceReady);
                 _this.handleError(errorCode);
             });
@@ -5038,7 +5180,9 @@ var ergometer;
         PerformanceMonitorBle.prototype.readStringCharacteristic = function (serviceUUID, UUID) {
             var _this = this;
             return new Promise(function (resolve, reject) {
-                _this.driver.readCharacteristic(serviceUUID, UUID).then(function (data) {
+                _this.driver
+                    .readCharacteristic(serviceUUID, UUID)
+                    .then(function (data) {
                     resolve(ergometer.utils.bufferToString(data));
                 }, reject);
             });
@@ -5049,7 +5193,8 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.readSampleRate = function () {
             var _this = this;
-            return this.driver.readCharacteristic(ergometer.ble.PMROWING_SERVICE, ergometer.ble.ROWING_STATUS_SAMPLE_RATE_CHARACTERISIC)
+            return this.driver
+                .readCharacteristic(ergometer.ble.PMROWING_SERVICE, ergometer.ble.ROWING_STATUS_SAMPLE_RATE_CHARACTERISIC)
                 .then(function (data) {
                 var view = new DataView(data);
                 _this._sampleRate = view.getUint8(0);
@@ -5063,25 +5208,26 @@ var ergometer;
             var _this = this;
             return new Promise(function (resolve, reject) {
                 Promise.all([
-                    _this.readStringCharacteristic(ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.SERIALNUMBER_CHARACTERISTIC)
-                        .then(function (value) {
+                    _this.readStringCharacteristic(ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.SERIALNUMBER_CHARACTERISTIC).then(function (value) {
                         _this._deviceInfo.serial = value;
                     }),
-                    _this.readStringCharacteristic(ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.HWREVISION_CHARACTERISIC)
-                        .then(function (value) {
+                    _this.readStringCharacteristic(ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.HWREVISION_CHARACTERISIC).then(function (value) {
                         _this._deviceInfo.hardwareRevision = value;
                     }),
-                    _this.readStringCharacteristic(ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.FWREVISION_CHARACTERISIC)
-                        .then(function (value) {
+                    _this.readStringCharacteristic(ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.FWREVISION_CHARACTERISIC).then(function (value) {
                         _this._deviceInfo.firmwareRevision = value;
                     }),
-                    _this.readStringCharacteristic(ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.MANUFNAME_CHARACTERISIC)
-                        .then(function (value) {
+                    _this.readStringCharacteristic(ergometer.ble.PMDEVICE_INFO_SERVICE, ergometer.ble.MANUFNAME_CHARACTERISIC).then(function (value) {
                         _this._deviceInfo.manufacturer = value;
                         _this._deviceInfo.connected = true;
                     }),
-                    _this.readSampleRate()
-                ]).then(function () { resolve(); }, function (e) { _this.handleError(e); resolve(e); }); //log erro let not get this into the way of connecting
+                    _this.readSampleRate(),
+                ]).then(function () {
+                    resolve();
+                }, function (e) {
+                    _this.handleError(e);
+                    resolve(e);
+                }); //log erro let not get this into the way of connecting
             });
         };
         /**
@@ -5090,19 +5236,20 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleRowingGeneralStatus = function (data) {
             var parsed = {
-                elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                distance: ergometer.utils.getUint24(data, 3 /* DISTANCE_LO */) / 10,
-                workoutType: data.getUint8(6 /* WORKOUT_TYPE */),
-                intervalType: data.getUint8(7 /* INTERVAL_TYPE */),
-                workoutState: data.getUint8(8 /* WORKOUT_STATE */),
-                rowingState: data.getUint8(9 /* ROWING_STATE */),
-                strokeState: data.getUint8(10 /* STROKE_STATE */),
-                totalWorkDistance: ergometer.utils.getUint24(data, 11 /* TOTAL_WORK_DISTANCE_LO */),
-                workoutDuration: ergometer.utils.getUint24(data, 14 /* WORKOUT_DURATION_LO */),
-                workoutDurationType: data.getUint8(17 /* WORKOUT_DURATION_TYPE */),
-                dragFactor: data.getUint8(18 /* DRAG_FACTOR */),
+                elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Rowing_Status_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                distance: ergometer.utils.getUint24(data, 3 /* ble.PM_Rowing_Status_BLE_Payload.DISTANCE_LO */) /
+                    10,
+                workoutType: data.getUint8(6 /* ble.PM_Rowing_Status_BLE_Payload.WORKOUT_TYPE */),
+                intervalType: data.getUint8(7 /* ble.PM_Rowing_Status_BLE_Payload.INTERVAL_TYPE */),
+                workoutState: data.getUint8(8 /* ble.PM_Rowing_Status_BLE_Payload.WORKOUT_STATE */),
+                rowingState: data.getUint8(9 /* ble.PM_Rowing_Status_BLE_Payload.ROWING_STATE */),
+                strokeState: data.getUint8(10 /* ble.PM_Rowing_Status_BLE_Payload.STROKE_STATE */),
+                totalWorkDistance: ergometer.utils.getUint24(data, 11 /* ble.PM_Rowing_Status_BLE_Payload.TOTAL_WORK_DISTANCE_LO */),
+                workoutDuration: ergometer.utils.getUint24(data, 14 /* ble.PM_Rowing_Status_BLE_Payload.WORKOUT_DURATION_LO */),
+                workoutDurationType: data.getUint8(17 /* ble.PM_Rowing_Status_BLE_Payload.WORKOUT_DURATION_TYPE */),
+                dragFactor: data.getUint8(18 /* ble.PM_Rowing_Status_BLE_Payload.DRAG_FACTOR */),
             };
-            if (parsed.workoutDurationType == 0 /* time */)
+            if (parsed.workoutDurationType == 0 /* WorkoutDurationType.time */)
                 parsed.workoutDuration = parsed.workoutDuration * 10; //in mili seconds
             if (JSON.stringify(this.rowingGeneralStatus) !== JSON.stringify(parsed)) {
                 this.rowingGeneralStatusEvent.pub(parsed);
@@ -5118,18 +5265,19 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleRowingAdditionalStatus1 = function (data) {
             var parsed = {
-                elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                speed: data.getUint16(3 /* SPEED_LO */) / 1000,
-                strokeRate: data.getUint8(5 /* STROKE_RATE */),
-                heartRate: ergometer.utils.valueToNullValue(data.getUint8(6 /* HEARTRATE */), 255),
-                currentPace: this.calcPace(data.getUint8(7 /* CURRENT_PACE_LO */), data.getUint8(8 /* CURRENT_PACE_HI */)),
-                averagePace: this.calcPace(data.getUint8(9 /* AVG_PACE_LO */), data.getUint8(10 /* AVG_PACE_HI */)),
-                restDistance: data.getUint16(11 /* REST_DISTANCE_LO */),
-                restTime: ergometer.utils.getUint24(data, 13 /* REST_TIME_LO */) * 10,
-                averagePower: null
+                elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Extra_Status1_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                speed: data.getUint16(3 /* ble.PM_Extra_Status1_BLE_Payload.SPEED_LO */) / 1000, // m/s
+                strokeRate: data.getUint8(5 /* ble.PM_Extra_Status1_BLE_Payload.STROKE_RATE */),
+                heartRate: ergometer.utils.valueToNullValue(data.getUint8(6 /* ble.PM_Extra_Status1_BLE_Payload.HEARTRATE */), 255),
+                currentPace: this.calcPace(data.getUint8(7 /* ble.PM_Extra_Status1_BLE_Payload.CURRENT_PACE_LO */), data.getUint8(8 /* ble.PM_Extra_Status1_BLE_Payload.CURRENT_PACE_HI */)),
+                averagePace: this.calcPace(data.getUint8(9 /* ble.PM_Extra_Status1_BLE_Payload.AVG_PACE_LO */), data.getUint8(10 /* ble.PM_Extra_Status1_BLE_Payload.AVG_PACE_HI */)),
+                restDistance: data.getUint16(11 /* ble.PM_Extra_Status1_BLE_Payload.REST_DISTANCE_LO */),
+                restTime: ergometer.utils.getUint24(data, 13 /* ble.PM_Extra_Status1_BLE_Payload.REST_TIME_LO */) *
+                    10, //mili seconds
+                averagePower: null,
             };
-            if (data.byteLength == 18 /* BLE_PAYLOAD_SIZE */)
-                parsed.averagePower = data.getUint16(16 /* AVG_POWER_LO */);
+            if (data.byteLength == 18 /* ble.PM_Mux_Extra_Status1_BLE_Payload.BLE_PAYLOAD_SIZE */)
+                parsed.averagePower = data.getUint16(16 /* ble.PM_Mux_Extra_Status1_BLE_Payload.AVG_POWER_LO */);
             if (JSON.stringify(this.rowingAdditionalStatus1) !== JSON.stringify(parsed)) {
                 this.rowingAdditionalStatus1Event.pub(parsed);
                 this._rowingAdditionalStatus1 = parsed;
@@ -5141,30 +5289,30 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleRowingAdditionalStatus2 = function (data) {
             var parsed;
-            if (data.byteLength == 20 /* BLE_PAYLOAD_SIZE */) {
+            if (data.byteLength == 20 /* ble.PM_Extra_Status2_BLE_Payload.BLE_PAYLOAD_SIZE */) {
                 parsed = {
-                    elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                    intervalCount: data.getUint8(3 /* INTERVAL_COUNT */),
-                    averagePower: data.getUint16(4 /* AVG_POWER_LO */),
-                    totalCalories: data.getUint16(6 /* TOTAL_CALORIES_LO */),
-                    splitAveragePace: this.calcPace(data.getUint8(8 /* SPLIT_INTERVAL_AVG_PACE_LO */), data.getUint8(9 /* SPLIT_INTERVAL_AVG_PACE_HI */)),
-                    splitAveragePower: data.getUint16(10 /* SPLIT_INTERVAL_AVG_POWER_LO */),
-                    splitAverageCalories: data.getUint16(12 /* SPLIT_INTERVAL_AVG_CALORIES_LO */),
-                    lastSplitTime: data.getUint16(14 /* LAST_SPLIT_TIME_LO */) * 100,
-                    lastSplitDistance: ergometer.utils.getUint24(data, 17 /* LAST_SPLIT_DISTANCE_LO */)
+                    elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Extra_Status2_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                    intervalCount: data.getUint8(3 /* ble.PM_Extra_Status2_BLE_Payload.INTERVAL_COUNT */),
+                    averagePower: data.getUint16(4 /* ble.PM_Extra_Status2_BLE_Payload.AVG_POWER_LO */),
+                    totalCalories: data.getUint16(6 /* ble.PM_Extra_Status2_BLE_Payload.TOTAL_CALORIES_LO */),
+                    splitAveragePace: this.calcPace(data.getUint8(8 /* ble.PM_Extra_Status2_BLE_Payload.SPLIT_INTERVAL_AVG_PACE_LO */), data.getUint8(9 /* ble.PM_Extra_Status2_BLE_Payload.SPLIT_INTERVAL_AVG_PACE_HI */)), // ms,
+                    splitAveragePower: data.getUint16(10 /* ble.PM_Extra_Status2_BLE_Payload.SPLIT_INTERVAL_AVG_POWER_LO */), //watt
+                    splitAverageCalories: data.getUint16(12 /* ble.PM_Extra_Status2_BLE_Payload.SPLIT_INTERVAL_AVG_CALORIES_LO */), // cal/hour
+                    lastSplitTime: data.getUint16(14 /* ble.PM_Extra_Status2_BLE_Payload.LAST_SPLIT_TIME_LO */) * 100, //the doc 0.1 factor is this right?
+                    lastSplitDistance: ergometer.utils.getUint24(data, 17 /* ble.PM_Extra_Status2_BLE_Payload.LAST_SPLIT_DISTANCE_LO */),
                 };
             }
             else {
                 parsed = {
-                    elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                    intervalCount: data.getUint8(3 /* INTERVAL_COUNT */),
+                    elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Mux_Extra_Status2_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                    intervalCount: data.getUint8(3 /* ble.PM_Mux_Extra_Status2_BLE_Payload.INTERVAL_COUNT */),
                     averagePower: null,
-                    totalCalories: data.getUint16(4 /* TOTAL_CALORIES_LO */),
-                    splitAveragePace: this.calcPace(data.getUint8(6 /* SPLIT_INTERVAL_AVG_PACE_LO */), data.getUint8(7 /* SPLIT_INTERVAL_AVG_PACE_HI */)),
-                    splitAveragePower: data.getUint16(8 /* SPLIT_INTERVAL_AVG_POWER_LO */),
-                    splitAverageCalories: data.getUint16(10 /* SPLIT_INTERVAL_AVG_CALORIES_LO */),
-                    lastSplitTime: data.getUint16(12 /* LAST_SPLIT_TIME_LO */) * 100,
-                    lastSplitDistance: ergometer.utils.getUint24(data, 15 /* LAST_SPLIT_DISTANCE_LO */)
+                    totalCalories: data.getUint16(4 /* ble.PM_Mux_Extra_Status2_BLE_Payload.TOTAL_CALORIES_LO */),
+                    splitAveragePace: this.calcPace(data.getUint8(6 /* ble.PM_Mux_Extra_Status2_BLE_Payload.SPLIT_INTERVAL_AVG_PACE_LO */), data.getUint8(7 /* ble.PM_Mux_Extra_Status2_BLE_Payload.SPLIT_INTERVAL_AVG_PACE_HI */)), //ms,
+                    splitAveragePower: data.getUint16(8 /* ble.PM_Mux_Extra_Status2_BLE_Payload.SPLIT_INTERVAL_AVG_POWER_LO */), //watt
+                    splitAverageCalories: data.getUint16(10 /* ble.PM_Mux_Extra_Status2_BLE_Payload.SPLIT_INTERVAL_AVG_CALORIES_LO */), // cal/hour
+                    lastSplitTime: data.getUint16(12 /* ble.PM_Mux_Extra_Status2_BLE_Payload.LAST_SPLIT_TIME_LO */) * 100, //the doc 0.1 factor is this right?
+                    lastSplitDistance: ergometer.utils.getUint24(data, 15 /* ble.PM_Mux_Extra_Status2_BLE_Payload.LAST_SPLIT_DISTANCE_LO */),
                 };
             }
             if (JSON.stringify(this.rowingAdditionalStatus2) !== JSON.stringify(parsed)) {
@@ -5178,32 +5326,49 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleRowingStrokeData = function (data) {
             var parsed;
-            if (data.byteLength == 20 /* BLE_PAYLOAD_SIZE */) {
+            if (data.byteLength == 20 /* ble.PM_Stroke_Data_BLE_Payload.BLE_PAYLOAD_SIZE */) {
                 parsed = {
-                    elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                    distance: ergometer.utils.getUint24(data, 3 /* DISTANCE_LO */) / 10,
-                    driveLength: data.getUint8(6 /* DRIVE_LENGTH */) / 100,
-                    driveTime: data.getUint8(7 /* DRIVE_TIME */) * 10,
-                    strokeRecoveryTime: (data.getUint8(8 /* STROKE_RECOVERY_TIME_LO */) + data.getUint8(9 /* STROKE_RECOVERY_TIME_HI */) * 256) * 10,
-                    strokeDistance: (data.getUint8(10 /* STROKE_DISTANCE_LO */) + data.getUint8(11 /* STROKE_DISTANCE_HI */) * 256) / 100,
-                    peakDriveForce: data.getUint16(12 /* PEAK_DRIVE_FORCE_LO */) / 10,
-                    averageDriveForce: data.getUint16(14 /* AVG_DRIVE_FORCE_LO */) / 10,
-                    workPerStroke: data.getUint16(16 /* WORK_PER_STROKE_LO */) / 10,
-                    strokeCount: data.getUint8(18 /* STROKE_COUNT_LO */) + data.getUint8(19 /* STROKE_COUNT_HI */) * 256 //PM bug: LSB and MSB are swapped
+                    elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Stroke_Data_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                    distance: ergometer.utils.getUint24(data, 3 /* ble.PM_Stroke_Data_BLE_Payload.DISTANCE_LO */) /
+                        10, //meter
+                    driveLength: data.getUint8(6 /* ble.PM_Stroke_Data_BLE_Payload.DRIVE_LENGTH */) / 100, //meters
+                    driveTime: data.getUint8(7 /* ble.PM_Stroke_Data_BLE_Payload.DRIVE_TIME */) * 10, //ms
+                    strokeRecoveryTime: (data.getUint8(8 /* ble.PM_Stroke_Data_BLE_Payload.STROKE_RECOVERY_TIME_LO */) +
+                        data.getUint8(9 /* ble.PM_Stroke_Data_BLE_Payload.STROKE_RECOVERY_TIME_HI */) *
+                            256) *
+                        10, //ms
+                    strokeDistance: (data.getUint8(10 /* ble.PM_Mux_Stroke_Data_BLE_Payload.STROKE_DISTANCE_LO */) +
+                        data.getUint8(11 /* ble.PM_Mux_Stroke_Data_BLE_Payload.STROKE_DISTANCE_HI */) *
+                            256) /
+                        100, //meter
+                    peakDriveForce: data.getUint16(12 /* ble.PM_Stroke_Data_BLE_Payload.PEAK_DRIVE_FORCE_LO */) /
+                        10, //lbs
+                    averageDriveForce: data.getUint16(14 /* ble.PM_Stroke_Data_BLE_Payload.AVG_DRIVE_FORCE_LO */) /
+                        10, //lbs
+                    workPerStroke: data.getUint16(16 /* ble.PM_Stroke_Data_BLE_Payload.WORK_PER_STROKE_LO */) /
+                        10, //jouls
+                    strokeCount: data.getUint8(18 /* ble.PM_Stroke_Data_BLE_Payload.STROKE_COUNT_LO */) +
+                        data.getUint8(19 /* ble.PM_Stroke_Data_BLE_Payload.STROKE_COUNT_HI */) * 256, //PM bug: LSB and MSB are swapped
                 };
             }
             else {
                 parsed = {
-                    elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                    distance: ergometer.utils.getUint24(data, 3 /* DISTANCE_LO */) / 10,
-                    driveLength: data.getUint8(6 /* DRIVE_LENGTH */) / 100,
-                    driveTime: data.getUint8(7 /* DRIVE_TIME */) * 10,
-                    strokeRecoveryTime: data.getUint16(8 /* STROKE_RECOVERY_TIME_LO */) * 10,
-                    strokeDistance: (data.getUint8(10 /* STROKE_DISTANCE_LO */) + data.getUint8(11 /* STROKE_DISTANCE_HI */) * 256) / 100,
-                    peakDriveForce: data.getUint16(12 /* PEAK_DRIVE_FORCE_LO */) / 10,
-                    averageDriveForce: data.getUint16(14 /* AVG_DRIVE_FORCE_LO */) / 10,
+                    elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Mux_Stroke_Data_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                    distance: ergometer.utils.getUint24(data, 3 /* ble.PM_Mux_Stroke_Data_BLE_Payload.DISTANCE_LO */) / 10, //meter
+                    driveLength: data.getUint8(6 /* ble.PM_Mux_Stroke_Data_BLE_Payload.DRIVE_LENGTH */) /
+                        100, //meters
+                    driveTime: data.getUint8(7 /* ble.PM_Mux_Stroke_Data_BLE_Payload.DRIVE_TIME */) * 10, //ms
+                    strokeRecoveryTime: data.getUint16(8 /* ble.PM_Mux_Stroke_Data_BLE_Payload.STROKE_RECOVERY_TIME_LO */) * 10, //ms
+                    strokeDistance: (data.getUint8(10 /* ble.PM_Mux_Stroke_Data_BLE_Payload.STROKE_DISTANCE_LO */) +
+                        data.getUint8(11 /* ble.PM_Mux_Stroke_Data_BLE_Payload.STROKE_DISTANCE_HI */) *
+                            256) /
+                        100, //meter
+                    peakDriveForce: data.getUint16(12 /* ble.PM_Mux_Stroke_Data_BLE_Payload.PEAK_DRIVE_FORCE_LO */) / 10, //lbs
+                    averageDriveForce: data.getUint16(14 /* ble.PM_Mux_Stroke_Data_BLE_Payload.AVG_DRIVE_FORCE_LO */) / 10, //lbs
                     workPerStroke: null,
-                    strokeCount: data.getUint8(16 /* STROKE_COUNT_LO */) + data.getUint8(17 /* STROKE_COUNT_HI */) * 256 //PM bug: LSB and MSB are swapped
+                    strokeCount: data.getUint8(16 /* ble.PM_Mux_Stroke_Data_BLE_Payload.STROKE_COUNT_LO */) +
+                        data.getUint8(17 /* ble.PM_Mux_Stroke_Data_BLE_Payload.STROKE_COUNT_HI */) *
+                            256, //PM bug: LSB and MSB are swapped
                 };
             }
             if (JSON.stringify(this.rowingStrokeData) !== JSON.stringify(parsed)) {
@@ -5217,17 +5382,23 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleRowingAdditionalStrokeData = function (data) {
             var parsed = {
-                elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                strokePower: data.getUint8(3 /* STROKE_POWER_LO */) + data.getUint8(4 /* STROKE_POWER_HI */) * 256,
-                strokeCalories: data.getUint16(5 /* STROKE_CALORIES_LO */),
-                strokeCount: data.getUint8(7 /* STROKE_COUNT_LO */) + data.getUint8(8 /* STROKE_COUNT_HI */) * 256,
-                projectedWorkTime: ergometer.utils.getUint24(data, 9 /* PROJ_WORK_TIME_LO */) * 1000,
-                projectedWorkDistance: ergometer.utils.getUint24(data, 12 /* PROJ_WORK_DIST_LO */),
-                workPerStroke: null //filled when multiplexed is true
+                elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Extra_Stroke_Data_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                strokePower: data.getUint8(3 /* ble.PM_Extra_Stroke_Data_BLE_Payload.STROKE_POWER_LO */) +
+                    data.getUint8(4 /* ble.PM_Extra_Stroke_Data_BLE_Payload.STROKE_POWER_HI */) *
+                        256, //watts
+                strokeCalories: data.getUint16(5 /* ble.PM_Extra_Stroke_Data_BLE_Payload.STROKE_CALORIES_LO */), //cal/hr
+                strokeCount: data.getUint8(7 /* ble.PM_Extra_Stroke_Data_BLE_Payload.STROKE_COUNT_LO */) +
+                    data.getUint8(8 /* ble.PM_Extra_Stroke_Data_BLE_Payload.STROKE_COUNT_HI */) *
+                        256, //PM bug: LSB and MSB are swapped
+                projectedWorkTime: ergometer.utils.getUint24(data, 9 /* ble.PM_Extra_Stroke_Data_BLE_Payload.PROJ_WORK_TIME_LO */) * 1000, //ms
+                projectedWorkDistance: ergometer.utils.getUint24(data, 12 /* ble.PM_Extra_Stroke_Data_BLE_Payload.PROJ_WORK_DIST_LO */), //meter
+                workPerStroke: null, //filled when multiplexed is true
             };
-            if (data.byteLength == 17 /* BLE_PAYLOAD_SIZE */)
-                parsed.workPerStroke = data.getUint16(15 /* WORK_PER_STROKE_LO */);
-            if (JSON.stringify(this.rowingAdditionalStrokeData) !== JSON.stringify(parsed)) {
+            if (data.byteLength ==
+                17 /* ble.PM_Mux_Extra_Stroke_Data_BLE_Payload.BLE_PAYLOAD_SIZE */)
+                parsed.workPerStroke = data.getUint16(15 /* ble.PM_Mux_Extra_Stroke_Data_BLE_Payload.WORK_PER_STROKE_LO */);
+            if (JSON.stringify(this.rowingAdditionalStrokeData) !==
+                JSON.stringify(parsed)) {
                 this.rowingAdditionalStrokeDataEvent.pub(parsed);
                 this._rowingAdditionalStrokeData = parsed;
             }
@@ -5238,14 +5409,15 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleRowingSplitIntervalData = function (data) {
             var parsed = {
-                elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                distance: ergometer.utils.getUint24(data, 3 /* DISTANCE_LO */) / 10,
-                intervalTime: ergometer.utils.getUint24(data, 6 /* SPLIT_TIME_LO */) * 100,
-                intervalDistance: ergometer.utils.getUint24(data, 9 /* SPLIT_DISTANCE_LO */),
-                intervalRestTime: data.getUint16(12 /* REST_TIME_LO */) * 1000,
-                intervalRestDistance: data.getUint16(14 /* REST_DISTANCE_LO */),
-                intervalType: data.getUint8(16 /* TYPE */),
-                intervalNumber: data.getUint8(17 /* INT_NUMBER */),
+                elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Split_Interval_Data_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                distance: ergometer.utils.getUint24(data, 3 /* ble.PM_Split_Interval_Data_BLE_Payload.DISTANCE_LO */) / 10, //meters
+                intervalTime: ergometer.utils.getUint24(data, 6 /* ble.PM_Split_Interval_Data_BLE_Payload.SPLIT_TIME_LO */) * 100,
+                intervalDistance: ergometer.utils.getUint24(data, 9 /* ble.PM_Split_Interval_Data_BLE_Payload.SPLIT_DISTANCE_LO */),
+                intervalRestTime: data.getUint16(12 /* ble.PM_Split_Interval_Data_BLE_Payload.REST_TIME_LO */) *
+                    1000,
+                intervalRestDistance: data.getUint16(14 /* ble.PM_Split_Interval_Data_BLE_Payload.REST_DISTANCE_LO */), //meter
+                intervalType: data.getUint8(16 /* ble.PM_Split_Interval_Data_BLE_Payload.TYPE */),
+                intervalNumber: data.getUint8(17 /* ble.PM_Split_Interval_Data_BLE_Payload.INT_NUMBER */),
             };
             if (JSON.stringify(this.rowingSplitIntervalData) !== JSON.stringify(parsed)) {
                 this.rowingSplitIntervalDataEvent.pub(parsed);
@@ -5258,19 +5430,20 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleRowingAdditionalSplitIntervalData = function (data) {
             var parsed = {
-                elapsedTime: ergometer.utils.getUint24(data, 0 /* ELAPSED_TIME_LO */) * 10,
-                intervalAverageStrokeRate: data.getUint8(3 /* STROKE_RATE */),
-                intervalWorkHeartrate: data.getUint8(4 /* WORK_HR */),
-                intervalRestHeartrate: data.getUint8(5 /* REST_HR */),
-                intervalAveragePace: data.getUint16(6 /* AVG_PACE_LO */) * 10,
-                intervalTotalCalories: data.getUint16(8 /* CALORIES_LO */),
-                intervalAverageCalories: data.getUint16(10 /* AVG_CALORIES_LO */),
-                intervalSpeed: data.getUint16(12 /* SPEED_LO */) / 1000,
-                intervalPower: data.getUint16(14 /* POWER_LO */),
-                splitAverageDragFactor: data.getUint8(16 /* AVG_DRAG_FACTOR */),
-                intervalNumber: data.getUint8(17 /* INT_NUMBER */)
+                elapsedTime: ergometer.utils.getUint24(data, 0 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.ELAPSED_TIME_LO */) * 10, //in mili seconds
+                intervalAverageStrokeRate: data.getUint8(3 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.STROKE_RATE */),
+                intervalWorkHeartrate: data.getUint8(4 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.WORK_HR */),
+                intervalRestHeartrate: data.getUint8(5 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.REST_HR */),
+                intervalAveragePace: data.getUint16(6 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.AVG_PACE_LO */) * 10, //ms lbs
+                intervalTotalCalories: data.getUint16(8 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.CALORIES_LO */),
+                intervalAverageCalories: data.getUint16(10 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.AVG_CALORIES_LO */),
+                intervalSpeed: data.getUint16(12 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.SPEED_LO */) / 1000, //m/s
+                intervalPower: data.getUint16(14 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.POWER_LO */),
+                splitAverageDragFactor: data.getUint8(16 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.AVG_DRAG_FACTOR */),
+                intervalNumber: data.getUint8(17 /* ble.PM_Extra_Split_Interval_Data_BLE_Payload.INT_NUMBER */),
             };
-            if (JSON.stringify(this.rowingAdditionalSplitIntervalData) !== JSON.stringify(parsed)) {
+            if (JSON.stringify(this.rowingAdditionalSplitIntervalData) !==
+                JSON.stringify(parsed)) {
                 this.rowingAdditionalSplitIntervalDataEvent.pub(parsed);
                 this._rowingAdditionalSplitIntervalData = parsed;
             }
@@ -5281,22 +5454,23 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleWorkoutSummaryData = function (data) {
             var parsed = {
-                logEntryDate: data.getUint16(0 /* LOG_DATE_LO */),
-                logEntryTime: data.getUint16(2 /* LOG_TIME_LO */),
-                elapsedTime: ergometer.utils.getUint24(data, 4 /* ELAPSED_TIME_LO */) * 10,
-                distance: ergometer.utils.getUint24(data, 7 /* DISTANCE_LO */) / 10,
-                averageStrokeRate: data.getUint8(10 /* AVG_SPM */),
-                endingHeartrate: data.getUint8(11 /* END_HR */),
-                averageHeartrate: data.getUint8(12 /* AVG_HR */),
-                minHeartrate: data.getUint8(13 /* MIN_HR */),
-                maxHeartrate: data.getUint8(14 /* MAX_HR */),
-                dragFactorAverage: data.getUint8(15 /* AVG_DRAG_FACTOR */),
-                recoveryHeartRate: data.getUint8(16 /* RECOVERY_HR */),
-                workoutType: data.getUint8(17 /* WORKOUT_TYPE */),
-                averagePace: null
+                logEntryDate: data.getUint16(0 /* ble.PM_Workout_Summary_Data_BLE_Payload.LOG_DATE_LO */),
+                logEntryTime: data.getUint16(2 /* ble.PM_Workout_Summary_Data_BLE_Payload.LOG_TIME_LO */),
+                elapsedTime: ergometer.utils.getUint24(data, 4 /* ble.PM_Workout_Summary_Data_BLE_Payload.ELAPSED_TIME_LO */) * 10,
+                distance: ergometer.utils.getUint24(data, 7 /* ble.PM_Workout_Summary_Data_BLE_Payload.DISTANCE_LO */) / 10,
+                averageStrokeRate: data.getUint8(10 /* ble.PM_Workout_Summary_Data_BLE_Payload.AVG_SPM */),
+                endingHeartrate: data.getUint8(11 /* ble.PM_Workout_Summary_Data_BLE_Payload.END_HR */),
+                averageHeartrate: data.getUint8(12 /* ble.PM_Workout_Summary_Data_BLE_Payload.AVG_HR */),
+                minHeartrate: data.getUint8(13 /* ble.PM_Workout_Summary_Data_BLE_Payload.MIN_HR */),
+                maxHeartrate: data.getUint8(14 /* ble.PM_Workout_Summary_Data_BLE_Payload.MAX_HR */),
+                dragFactorAverage: data.getUint8(15 /* ble.PM_Workout_Summary_Data_BLE_Payload.AVG_DRAG_FACTOR */),
+                recoveryHeartRate: data.getUint8(16 /* ble.PM_Workout_Summary_Data_BLE_Payload.RECOVERY_HR */),
+                workoutType: data.getUint8(17 /* ble.PM_Workout_Summary_Data_BLE_Payload.WORKOUT_TYPE */),
+                averagePace: null,
             };
-            if (data.byteLength == 20 /* BLE_PAYLOAD_SIZE */) {
-                parsed.averagePace = data.getUint16(18 /* AVG_PACE_LO */);
+            if (data.byteLength ==
+                20 /* ble.PM_Workout_Summary_Data_BLE_Payload.BLE_PAYLOAD_SIZE */) {
+                parsed.averagePace = data.getUint16(18 /* ble.PM_Workout_Summary_Data_BLE_Payload.AVG_PACE_LO */);
             }
             if (JSON.stringify(this.workoutSummaryData) !== JSON.stringify(parsed)) {
                 this.workoutSummaryDataEvent.pub(parsed);
@@ -5309,35 +5483,39 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleAdditionalWorkoutSummaryData = function (data) {
             var parsed;
-            if (data.byteLength == 19 /* DATA_BLE_PAYLOAD_SIZE */) {
+            if (data.byteLength ==
+                19 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.DATA_BLE_PAYLOAD_SIZE */) {
                 parsed = {
-                    logEntryDate: data.getUint16(0 /* LOG_DATE_LO */),
-                    logEntryTime: data.getUint16(1 /* LOG_DATE_HI */),
-                    intervalType: data.getUint8(4 /* SPLIT_INT_TYPE */),
-                    intervalSize: data.getUint16(5 /* SPLIT_INT_SIZE_LO */),
-                    intervalCount: data.getUint8(7 /* SPLIT_INT_COUNT */),
-                    totalCalories: data.getUint16(8 /* WORK_CALORIES_LO */),
-                    watts: data.getUint16(10 /* WATTS_LO */),
-                    totalRestDistance: ergometer.utils.getUint24(data, 12 /* TOTAL_REST_DISTANCE_LO */),
-                    intervalRestTime: data.getUint16(15 /* INTERVAL_REST_TIME_LO */),
-                    averageCalories: data.getUint16(17 /* AVG_CALORIES_LO */)
+                    logEntryDate: data.getUint16(0 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.LOG_DATE_LO */),
+                    logEntryTime: data.getUint16(1 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.LOG_DATE_HI */),
+                    intervalType: data.getUint8(4 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.SPLIT_INT_TYPE */),
+                    intervalSize: data.getUint16(5 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.SPLIT_INT_SIZE_LO */), //meters or seconds
+                    intervalCount: data.getUint8(7 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.SPLIT_INT_COUNT */),
+                    totalCalories: data.getUint16(8 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.WORK_CALORIES_LO */),
+                    watts: data.getUint16(10 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.WATTS_LO */),
+                    totalRestDistance: ergometer.utils.getUint24(data, 12 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.TOTAL_REST_DISTANCE_LO */),
+                    intervalRestTime: data.getUint16(15 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.INTERVAL_REST_TIME_LO */),
+                    averageCalories: data.getUint16(17 /* ble.PM_Extra_Workout_Summary_Data_BLE_Payload.AVG_CALORIES_LO */),
                 };
             }
             else {
                 parsed = {
-                    logEntryDate: data.getUint16(0 /* LOG_DATE_LO */),
-                    logEntryTime: data.getUint16(2 /* LOG_TIME_LO */),
+                    logEntryDate: data.getUint16(0 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload.LOG_DATE_LO */),
+                    logEntryTime: data.getUint16(2 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload.LOG_TIME_LO */),
                     intervalType: null,
-                    intervalSize: data.getUint16(4 /* SPLIT_INT_SIZE_LO */),
-                    intervalCount: data.getUint8(6 /* SPLIT_INT_COUNT */),
-                    totalCalories: data.getUint16(7 /* WORK_CALORIES_LO */),
-                    watts: data.getUint16(9 /* WATTS_LO */),
-                    totalRestDistance: ergometer.utils.getUint24(data, 11 /* TOTAL_REST_DISTANCE_LO */),
-                    intervalRestTime: data.getUint16(14 /* INTERVAL_REST_TIME_LO */),
-                    averageCalories: data.getUint16(16 /* AVG_CALORIES_LO */)
+                    intervalSize: data.getUint16(4 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload.SPLIT_INT_SIZE_LO */), //meters or seconds
+                    intervalCount: data.getUint8(6 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload.SPLIT_INT_COUNT */),
+                    totalCalories: data.getUint16(7 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload.WORK_CALORIES_LO */),
+                    watts: data.getUint16(9 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload.WATTS_LO */),
+                    totalRestDistance: ergometer.utils.getUint24(data, 11 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload
+                                  .TOTAL_REST_DISTANCE_LO */),
+                    intervalRestTime: data.getUint16(14 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload
+                                  .INTERVAL_REST_TIME_LO */),
+                    averageCalories: data.getUint16(16 /* ble.PM_Mux_Extra_Workout_Summary_Data_BLE_Payload.AVG_CALORIES_LO */),
                 };
             }
-            if (JSON.stringify(this.additionalWorkoutSummaryData) !== JSON.stringify(parsed)) {
+            if (JSON.stringify(this.additionalWorkoutSummaryData) !==
+                JSON.stringify(parsed)) {
                 this.additionalWorkoutSummaryDataEvent.pub(parsed);
                 this._additionalWorkoutSummaryData = parsed;
             }
@@ -5348,14 +5526,15 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleAdditionalWorkoutSummaryData2 = function (data) {
             var parsed = {
-                logEntryDate: data.getUint16(0 /* LOG_DATE_LO */),
-                logEntryTime: data.getUint16(1 /* LOG_DATE_HI */),
-                averagePace: data.getUint16(4 /* AVG_PACE_LO */),
-                gameIdentifier: data.getUint8(6 /* GAME_ID */),
-                gameScore: data.getUint16(7 /* GAME_SCORE_LO */),
-                ergMachineType: data.getUint8(9 /* MACHINE_TYPE */),
+                logEntryDate: data.getUint16(0 /* ble.PM_Mux_Extra_Workout_Summary2_Data_BLE_Payload.LOG_DATE_LO */),
+                logEntryTime: data.getUint16(1 /* ble.PM_Mux_Extra_Workout_Summary2_Data_BLE_Payload.LOG_DATE_HI */),
+                averagePace: data.getUint16(4 /* ble.PM_Mux_Extra_Workout_Summary2_Data_BLE_Payload.AVG_PACE_LO */),
+                gameIdentifier: data.getUint8(6 /* ble.PM_Mux_Extra_Workout_Summary2_Data_BLE_Payload.GAME_ID */),
+                gameScore: data.getUint16(7 /* ble.PM_Mux_Extra_Workout_Summary2_Data_BLE_Payload.GAME_SCORE_LO */),
+                ergMachineType: data.getUint8(9 /* ble.PM_Mux_Extra_Workout_Summary2_Data_BLE_Payload.MACHINE_TYPE */),
             };
-            if (JSON.stringify(this.additionalWorkoutSummaryData2) !== JSON.stringify(parsed)) {
+            if (JSON.stringify(this.additionalWorkoutSummaryData2) !==
+                JSON.stringify(parsed)) {
                 this.additionalWorkoutSummaryData2Event.pub(parsed);
                 this._additionalWorkoutSummaryData2 = parsed;
             }
@@ -5366,9 +5545,9 @@ var ergometer;
          */
         PerformanceMonitorBle.prototype.handleHeartRateBeltInformation = function (data) {
             var parsed = {
-                manufacturerId: data.getUint8(0 /* MANUFACTURER_ID */),
-                deviceType: data.getUint8(1 /* DEVICE_TYPE */),
-                beltId: data.getUint32(2 /* BELT_ID_LO */),
+                manufacturerId: data.getUint8(0 /* ble.PM_Heart_Rate_Belt_Info_BLE_Payload.MANUFACTURER_ID */),
+                deviceType: data.getUint8(1 /* ble.PM_Heart_Rate_Belt_Info_BLE_Payload.DEVICE_TYPE */),
+                beltId: data.getUint32(2 /* ble.PM_Heart_Rate_Belt_Info_BLE_Payload.BELT_ID_LO */),
             };
             if (JSON.stringify(this.heartRateBeltInformation) !== JSON.stringify(parsed)) {
                 this.heartRateBeltInformationEvent.pub(parsed);
@@ -5382,17 +5561,20 @@ var ergometer;
         PerformanceMonitorBle.prototype.deviceConnected = function () {
             var _this = this;
             this.debugInfo("readServices success");
-            this.debugInfo('Status: notifications are activated');
+            this.debugInfo("Status: notifications are activated");
             //handle to the notification
             this.changeConnectionState(ergometer.MonitorConnectionState.servicesFound);
             //first enable all notifications and wait till they are active
-            //and then set the connection state to ready           
-            this.handleCSafeNotifications().then(function () {
+            //and then set the connection state to ready
+            this.handleCSafeNotifications()
+                .then(function () {
                 return _this.enableDisableNotification();
-            }).then(function () {
+            })
+                .then(function () {
                 //fix problem of notifications not completaly ready yet
                 _this.changeConnectionState(ergometer.MonitorConnectionState.readyForCommunication);
-            }).catch(this.handleError);
+            })
+                .catch(this.handleError);
             //allways connect to csafe
         };
         PerformanceMonitorBle.prototype.handleCSafeNotifications = function () {
@@ -5413,64 +5595,63 @@ var ergometer;
             var dataType = ar.getUint8(0);
             ar = new DataView(data, 1);
             switch (dataType) {
-                case 49 /* ROWING_GENERAL_STATUS */: {
+                case 49 /* ble.PM_Multiplexed_Info_Type_ID.ROWING_GENERAL_STATUS */: {
                     if (this.rowingGeneralStatusEvent.count > 0)
                         this.handleRowingGeneralStatus(ar);
                     break;
                 }
-                case 50 /* ROWING_ADDITIONAL_STATUS1 */: {
+                case 50 /* ble.PM_Multiplexed_Info_Type_ID.ROWING_ADDITIONAL_STATUS1 */: {
                     if (this.rowingAdditionalStatus1Event.count > 0)
                         this.handleRowingAdditionalStatus1(ar);
                     break;
                 }
-                case 51 /* ROWING_ADDITIONAL_STATUS2 */: {
+                case 51 /* ble.PM_Multiplexed_Info_Type_ID.ROWING_ADDITIONAL_STATUS2 */: {
                     if (this.rowingAdditionalStatus2Event.count > 0)
                         this.handleRowingAdditionalStatus2(ar);
                     break;
                 }
-                case 53 /* STROKE_DATA_STATUS */: {
+                case 53 /* ble.PM_Multiplexed_Info_Type_ID.STROKE_DATA_STATUS */: {
                     if (this.rowingStrokeDataEvent.count > 0)
                         this.handleRowingStrokeData(ar);
                     break;
                 }
-                case 54 /* EXTRA_STROKE_DATA_STATUS */: {
+                case 54 /* ble.PM_Multiplexed_Info_Type_ID.EXTRA_STROKE_DATA_STATUS */: {
                     if (this.rowingAdditionalStrokeDataEvent.count > 0)
                         this.handleRowingAdditionalStrokeData(ar);
                     break;
                 }
-                case 55 /* SPLIT_INTERVAL_STATUS */: {
+                case 55 /* ble.PM_Multiplexed_Info_Type_ID.SPLIT_INTERVAL_STATUS */: {
                     if (this.rowingSplitIntervalDataEvent.count > 0)
                         this.handleRowingSplitIntervalData(ar);
                     break;
                 }
-                case 56 /* EXTRA_SPLIT_INTERVAL_STATUS */: {
+                case 56 /* ble.PM_Multiplexed_Info_Type_ID.EXTRA_SPLIT_INTERVAL_STATUS */: {
                     if (this.rowingAdditionalSplitIntervalDataEvent.count > 0)
                         this.handleRowingAdditionalSplitIntervalData(ar);
                     break;
                 }
-                case 57 /* WORKOUT_SUMMARY_STATUS */: {
+                case 57 /* ble.PM_Multiplexed_Info_Type_ID.WORKOUT_SUMMARY_STATUS */: {
                     if (this.workoutSummaryDataEvent.count > 0)
                         this.handleWorkoutSummaryData(ar);
                     break;
                 }
-                case 58 /* EXTRA_WORKOUT_SUMMARY_STATUS1 */: {
+                case 58 /* ble.PM_Multiplexed_Info_Type_ID.EXTRA_WORKOUT_SUMMARY_STATUS1 */: {
                     if (this.additionalWorkoutSummaryDataEvent.count > 0)
                         this.handleAdditionalWorkoutSummaryData(ar);
                     break;
                 }
-                case 59 /* HEART_RATE_BELT_INFO_STATUS */: {
+                case 59 /* ble.PM_Multiplexed_Info_Type_ID.HEART_RATE_BELT_INFO_STATUS */: {
                     if (this.heartRateBeltInformationEvent.count > 0)
                         this.handleHeartRateBeltInformation(ar);
                     break;
                 }
-                case 60 /* EXTRA_WORKOUT_SUMMARY_STATUS2 */: {
+                case 60 /* ble.PM_Multiplexed_Info_Type_ID.EXTRA_WORKOUT_SUMMARY_STATUS2 */: {
                     if (this.additionalWorkoutSummaryData2Event.count > 0)
                         this.handleAdditionalWorkoutSummaryData2(ar);
                     break;
                 }
             }
         };
-        ;
         /**
          *
          * @param data
@@ -5657,7 +5838,7 @@ var ergometer;
             this.changeConnectionState(ergometer.MonitorConnectionState.connecting);
             var deviceInfo = this.findDevice(deviceName);
             if (!deviceInfo)
-                throw "Device " + deviceName + " not found";
+                throw "Device ".concat(deviceName, " not found");
             this._deviceInfo = deviceInfo;
             return this.driver.connect(deviceInfo._internalDevice, function () {
                 _this.changeConnectionState(ergometer.MonitorConnectionState.deviceReady);
@@ -5726,3 +5907,4 @@ var ergometer;
     ergometer.HeartRateMonitorBle = HeartRateMonitorBle;
 })(ergometer || (ergometer = {}));
 //# sourceMappingURL=ergometer.js.map
+export { ergometer };
