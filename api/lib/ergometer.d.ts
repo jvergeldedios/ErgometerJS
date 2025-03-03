@@ -1,4 +1,49 @@
 /**
+ * Created by tijmen on 25-12-15.
+ */
+/** @internal */
+declare namespace ergometer.utils {
+    function getByte(value: number, byteIndex: number): number;
+    function copyArrayBuffer(src: ArrayBuffer): ArrayBuffer;
+    /**
+    * Interpret byte buffer as unsigned little endian 32 bit integer.
+    * Returns converted number.
+    * @param {ArrayBuffer} data - Input buffer.
+    * @param {number} offset - Start of data.
+    * @return Converted number.
+    * @public
+    */
+    function getUint24(data: DataView, offset: number): number;
+    function bufferToString(buf: ArrayBuffer): any;
+    function valueToNullValue(value: number, nullValue: number): number;
+    function isDefined(variable: any): boolean;
+    /**
+     * Takes a ArrayBuffer or TypedArray and returns its hexadecimal representation.
+     * No spaces or linebreaks.
+     * @param data
+     * @public
+     */
+    /**
+     * Returns the integer i in hexadecimal string form,
+     * with leading zeroes, such that
+     * the resulting string is at least byteCount*2 characters long.
+     * @param {int} i
+     * @param {int} byteCount
+     * @public
+     */
+    function toHexString(i: number, byteCount: number): string;
+    /**
+     * Takes a ArrayBuffer or TypedArray and returns its hexadecimal representation.
+     * No spaces or linebreaks.
+     * @param data
+     * @public
+     **/
+    function typedArrayToHexString(data: ArrayBuffer | Uint8Array, addComma?: boolean): string;
+    function hexStringToTypedArray(hexData: string): Uint8Array;
+    function getTime(): number;
+    function promiseAllSync(promisses: Promise<void>[]): Promise<void>;
+}
+/**
  * Created by tijmen on 04/07/2017.
  *
  * queue function calls which returns a promise, converted to typescript
@@ -454,6 +499,393 @@ declare namespace ergometer.ble {
         readCharacteristic(serviceUIID: string, characteristicUUID: string): Promise<ArrayBuffer>;
         enableNotification(serviceUIID: string, characteristicUUID: string, receive: (data: ArrayBuffer) => void): Promise<void>;
         disableNotification(serviceUIID: string, characteristicUUID: string): Promise<void>;
+    }
+}
+/**
+ * Created by tijmen on 16-01-16.
+ */
+/** @internal */
+declare namespace ergometer.ble {
+    /** @internal */
+    const PMDEVICE = "ce060000-43e5-11e4-916c-0800200c9a66";
+    const HEART_RATE_DEVICE_SERVICE = "0000180d-0000-1000-8000-00805f9b34fb";
+    const HEART_RATE_MEASUREMENT = "00002a37-0000-1000-8000-00805f9b34fb";
+    const PMDEVICE_INFO_SERVICE = "ce060010-43e5-11e4-916c-0800200c9a66";
+    const PMCONTROL_SERVICE = "ce060020-43e5-11e4-916c-0800200c9a66";
+    const PMROWING_SERVICE = "ce060030-43e5-11e4-916c-0800200c9a66";
+    const MODELNUMBER_CHARACTERISIC = "ce060011-43e5-11e4-916c-0800200c9a66";
+    const SERIALNUMBER_CHARACTERISTIC = "ce060012-43e5-11e4-916c-0800200c9a66";
+    const HWREVISION_CHARACTERISIC = "ce060013-43e5-11e4-916c-0800200c9a66";
+    const FWREVISION_CHARACTERISIC = "ce060014-43e5-11e4-916c-0800200c9a66";
+    const MANUFNAME_CHARACTERISIC = "ce060015-43e5-11e4-916c-0800200c9a66";
+    const MACHINETYPE_CHARACTERISIC = "ce060016-43e5-11e4-916c-0800200c9a66";
+    const TRANSMIT_TO_PM_CHARACTERISIC = "ce060021-43e5-11e4-916c-0800200c9a66";
+    const RECEIVE_FROM_PM_CHARACTERISIC = "ce060022-43e5-11e4-916c-0800200c9a66";
+    const ROWING_STATUS_CHARACTERISIC = "ce060031-43e5-11e4-916c-0800200c9a66";
+    const EXTRA_STATUS1_CHARACTERISIC = "ce060032-43e5-11e4-916c-0800200c9a66";
+    const EXTRA_STATUS2_CHARACTERISIC = "ce060033-43e5-11e4-916c-0800200c9a66";
+    const ROWING_STATUS_SAMPLE_RATE_CHARACTERISIC = "ce060034-43e5-11e4-916c-0800200c9a66";
+    const STROKE_DATA_CHARACTERISIC = "ce060035-43e5-11e4-916c-0800200c9a66";
+    const EXTRA_STROKE_DATA_CHARACTERISIC = "ce060036-43e5-11e4-916c-0800200c9a66";
+    const SPLIT_INTERVAL_DATA_CHARACTERISIC = "ce060037-43e5-11e4-916c-0800200c9a66";
+    const EXTRA_SPLIT_INTERVAL_DATA_CHARACTERISIC = "ce060038-43e5-11e4-916c-0800200c9a66";
+    const ROWING_SUMMARY_CHARACTERISIC = "ce060039-43e5-11e4-916c-0800200c9a66";
+    const EXTRA_ROWING_SUMMARY_CHARACTERISIC = "ce06003a-43e5-11e4-916c-0800200c9a66";
+    const HEART_RATE_BELT_INFO_CHARACTERISIC = "ce06003b-43e5-11e4-916c-0800200c9a66";
+    const MULTIPLEXED_INFO_CHARACTERISIC = "ce060080-43e5-11e4-916c-0800200c9a66";
+    const NOTIFICATION_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
+    const PACKET_SIZE = 20;
+    const enum PM_Rowing_Status_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        DISTANCE_LO = 3,
+        DISTANCE_MID = 4,
+        DISTANCE_HI = 5,
+        WORKOUT_TYPE = 6,
+        INTERVAL_TYPE = 7,
+        WORKOUT_STATE = 8,
+        ROWING_STATE = 9,
+        STROKE_STATE = 10,
+        TOTAL_WORK_DISTANCE_LO = 11,
+        TOTAL_WORK_DISTANCE_MID = 12,
+        TOTAL_WORK_DISTANCE_HI = 13,
+        WORKOUT_DURATION_LO = 14,
+        WORKOUT_DURATION_MID = 15,
+        WORKOUT_DURATION_HI = 16,
+        WORKOUT_DURATION_TYPE = 17,
+        DRAG_FACTOR = 18,
+        BLE_PAYLOAD_SIZE = 19
+    }
+    const enum PM_Extra_Status1_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        SPEED_LO = 3,
+        SPEED_HI = 4,
+        STROKE_RATE = 5,
+        HEARTRATE = 6,
+        CURRENT_PACE_LO = 7,
+        CURRENT_PACE_HI = 8,
+        AVG_PACE_LO = 9,
+        AVG_PACE_HI = 10,
+        REST_DISTANCE_LO = 11,
+        REST_DISTANCE_HI = 12,
+        REST_TIME_LO = 13,
+        REST_TIME_MID = 14,
+        REST_TIME_HI = 15,
+        BLE_PAYLOAD_SIZE = 16
+    }
+    const enum PM_Mux_Extra_Status1_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        SPEED_LO = 3,
+        SPEED_HI = 4,
+        STROKE_RATE = 5,
+        HEARTRATE = 6,
+        CURRENT_PACE_LO = 7,
+        CURRENT_PACE_HI = 8,
+        AVG_PACE_LO = 9,
+        AVG_PACE_HI = 10,
+        REST_DISTANCE_LO = 11,
+        REST_DISTANCE_HI = 12,
+        REST_TIME_LO = 13,
+        REST_TIME_MID = 14,
+        REST_TIME_HI = 15,
+        AVG_POWER_LO = 16,
+        AVG_POWER_HI = 17,
+        BLE_PAYLOAD_SIZE = 18
+    }
+    const enum PM_Extra_Status2_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        INTERVAL_COUNT = 3,
+        AVG_POWER_LO = 4,
+        AVG_POWER_HI = 5,
+        TOTAL_CALORIES_LO = 6,
+        TOTAL_CALORIES_HI = 7,
+        SPLIT_INTERVAL_AVG_PACE_LO = 8,
+        SPLIT_INTERVAL_AVG_PACE_HI = 9,
+        SPLIT_INTERVAL_AVG_POWER_LO = 10,
+        SPLIT_INTERVAL_AVG_POWER_HI = 11,
+        SPLIT_INTERVAL_AVG_CALORIES_LO = 12,
+        SPLIT_INTERVAL_AVG_CALORIES_HI = 13,
+        LAST_SPLIT_TIME_LO = 14,
+        LAST_SPLIT_TIME_MID = 15,
+        LAST_SPLIT_TIME_HI = 16,
+        LAST_SPLIT_DISTANCE_LO = 17,
+        LAST_SPLIT_DISTANCE_MID = 18,
+        LAST_SPLIT_DISTANCE_HI = 19,
+        BLE_PAYLOAD_SIZE = 20
+    }
+    const enum PM_Mux_Extra_Status2_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        INTERVAL_COUNT = 3,
+        TOTAL_CALORIES_LO = 4,
+        TOTAL_CALORIES_HI = 5,
+        SPLIT_INTERVAL_AVG_PACE_LO = 6,
+        SPLIT_INTERVAL_AVG_PACE_HI = 7,
+        SPLIT_INTERVAL_AVG_POWER_LO = 8,
+        SPLIT_INTERVAL_AVG_POWER_HI = 9,
+        SPLIT_INTERVAL_AVG_CALORIES_LO = 10,
+        SPLIT_INTERVAL_AVG_CALORIES_HI = 11,
+        LAST_SPLIT_TIME_LO = 12,
+        LAST_SPLIT_TIME_MID = 13,
+        LAST_SPLIT_TIME_HI = 14,
+        LAST_SPLIT_DISTANCE_LO = 15,
+        LAST_SPLIT_DISTANCE_MID = 16,
+        LAST_SPLIT_DISTANCE_HI = 17,
+        BLE_PAYLOAD_SIZE = 18
+    }
+    const enum PM_Stroke_Data_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        DISTANCE_LO = 3,
+        DISTANCE_MID = 4,
+        DISTANCE_HI = 5,
+        DRIVE_LENGTH = 6,
+        DRIVE_TIME = 7,
+        STROKE_RECOVERY_TIME_LO = 8,
+        STROKE_RECOVERY_TIME_HI = 9,
+        STROKE_DISTANCE_LO = 10,
+        STROKE_DISTANCE_HI = 11,
+        PEAK_DRIVE_FORCE_LO = 12,
+        PEAK_DRIVE_FORCE_HI = 13,
+        AVG_DRIVE_FORCE_LO = 14,
+        AVG_DRIVE_FORCE_HI = 15,
+        WORK_PER_STROKE_LO = 16,
+        WORK_PER_STROKE_HI = 17,
+        STROKE_COUNT_LO = 18,
+        STROKE_COUNT_HI = 19,
+        BLE_PAYLOAD_SIZE = 20
+    }
+    const enum PM_Mux_Stroke_Data_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        DISTANCE_LO = 3,
+        DISTANCE_MID = 4,
+        DISTANCE_HI = 5,
+        DRIVE_LENGTH = 6,
+        DRIVE_TIME = 7,
+        STROKE_RECOVERY_TIME_LO = 8,
+        STROKE_RECOVERY_TIME_HI = 9,
+        STROKE_DISTANCE_LO = 10,
+        STROKE_DISTANCE_HI = 11,
+        PEAK_DRIVE_FORCE_LO = 12,
+        PEAK_DRIVE_FORCE_HI = 13,
+        AVG_DRIVE_FORCE_LO = 14,
+        AVG_DRIVE_FORCE_HI = 15,
+        STROKE_COUNT_LO = 16,
+        STROKE_COUNT_HI = 17,
+        BLE_PAYLOAD_SIZE = 18
+    }
+    const enum PM_Extra_Stroke_Data_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        STROKE_POWER_LO = 3,
+        STROKE_POWER_HI = 4,
+        STROKE_CALORIES_LO = 5,
+        STROKE_CALORIES_HI = 6,
+        STROKE_COUNT_LO = 7,
+        STROKE_COUNT_HI = 8,
+        PROJ_WORK_TIME_LO = 9,
+        PROJ_WORK_TIME_MID = 10,
+        PROJ_WORK_TIME_HI = 11,
+        PROJ_WORK_DIST_LO = 12,
+        PROJ_WORK_DIST_MID = 13,
+        PROJ_WORK_DIST_HI = 14,
+        BLE_PAYLOAD_SIZE = 15
+    }
+    const enum PM_Mux_Extra_Stroke_Data_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        STROKE_POWER_LO = 3,
+        STROKE_POWER_HI = 4,
+        STROKE_CALORIES_LO = 5,
+        STROKE_CALORIES_HI = 6,
+        STROKE_COUNT_LO = 7,
+        STROKE_COUNT_HI = 8,
+        PROJ_WORK_TIME_LO = 9,
+        PROJ_WORK_TIME_MID = 10,
+        PROJ_WORK_TIME_HI = 11,
+        PROJ_WORK_DIST_LO = 12,
+        PROJ_WORK_DIST_MID = 13,
+        PROJ_WORK_DIST_HI = 14,
+        WORK_PER_STROKE_LO = 15,
+        WORK_PER_STROKE_HI = 16,
+        BLE_PAYLOAD_SIZE = 17
+    }
+    const enum PM_Split_Interval_Data_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        DISTANCE_LO = 3,
+        DISTANCE_MID = 4,
+        DISTANCE_HI = 5,
+        SPLIT_TIME_LO = 6,
+        SPLIT_TIME_MID = 7,
+        SPLIT_TIME_HI = 8,
+        SPLIT_DISTANCE_LO = 9,
+        SPLIT_DISTANCE_MID = 10,
+        SPLIT_DISTANCE_HI = 11,
+        REST_TIME_LO = 12,
+        REST_TIME_HI = 13,
+        REST_DISTANCE_LO = 14,
+        REST_DISTANCE_HI = 15,
+        TYPE = 16,
+        INT_NUMBER = 17,
+        BLE_PAYLOAD_SIZE = 18
+    }
+    const enum PM_Extra_Split_Interval_Data_BLE_Payload {
+        ELAPSED_TIME_LO = 0,
+        ELAPSED_TIME_MID = 1,
+        ELAPSED_TIME_HI = 2,
+        STROKE_RATE = 3,
+        WORK_HR = 4,
+        REST_HR = 5,
+        AVG_PACE_LO = 6,
+        AVG_PACE_HI = 7,
+        CALORIES_LO = 8,
+        CALORIES_HI = 9,
+        AVG_CALORIES_LO = 10,
+        AVG_CALORIES_HI = 11,
+        SPEED_LO = 12,
+        SPEED_HI = 13,
+        POWER_LO = 14,
+        POWER_HI = 15,
+        AVG_DRAG_FACTOR = 16,
+        INT_NUMBER = 17,
+        BLE_PAYLOAD_SIZE = 18
+    }
+    const enum PM_Workout_Summary_Data_BLE_Payload {
+        LOG_DATE_LO = 0,
+        LOG_DATE_HI = 1,
+        LOG_TIME_LO = 2,
+        LOG_TIME_HI = 3,
+        ELAPSED_TIME_LO = 4,
+        ELAPSED_TIME_MID = 5,
+        ELAPSED_TIME_HI = 6,
+        DISTANCE_LO = 7,
+        DISTANCE_MID = 8,
+        DISTANCE_HI = 9,
+        AVG_SPM = 10,
+        END_HR = 11,
+        AVG_HR = 12,
+        MIN_HR = 13,
+        MAX_HR = 14,
+        AVG_DRAG_FACTOR = 15,
+        RECOVERY_HR = 16,
+        WORKOUT_TYPE = 17,
+        AVG_PACE_LO = 18,
+        AVG_PACE_HI = 19,
+        BLE_PAYLOAD_SIZE = 20
+    }
+    const enum PM_Mux_Workout_Summary_Data_BLE_Payload {
+        LOG_DATE_LO = 0,
+        LOG_DATE_HI = 1,
+        LOG_TIME_LO = 2,
+        LOG_TIME_HI = 3,
+        ELAPSED_TIME_LO = 4,
+        ELAPSED_TIME_MID = 5,
+        ELAPSED_TIME_HI = 6,
+        DISTANCE_LO = 7,
+        DISTANCE_MID = 8,
+        DISTANCE_HI = 9,
+        AVG_SPM = 10,
+        END_HR = 11,
+        AVG_HR = 12,
+        MIN_HR = 13,
+        MAX_HR = 14,
+        AVG_DRAG_FACTOR = 15,
+        RECOVERY_HR = 16,
+        WORKOUT_TYPE = 17,
+        BLE_PAYLOAD_SIZE = 18
+    }
+    const enum PM_Extra_Workout_Summary_Data_BLE_Payload {
+        LOG_DATE_LO = 0,
+        LOG_DATE_HI = 1,
+        LOG_TIME_LO = 2,
+        LOG_TIME_HI = 3,
+        SPLIT_INT_TYPE = 4,
+        SPLIT_INT_SIZE_LO = 5,
+        SPLIT_INT_SIZE_HI = 6,
+        SPLIT_INT_COUNT = 7,
+        WORK_CALORIES_LO = 8,
+        WORK_CALORIES_HI = 9,
+        WATTS_LO = 10,
+        WATTS_HI = 11,
+        TOTAL_REST_DISTANCE_LO = 12,
+        TOTAL_REST_DISTANCE_MID = 13,
+        TOTAL_REST_DISTANCE_HI = 14,
+        INTERVAL_REST_TIME_LO = 15,
+        INTERVAL_REST_TIME_HI = 16,
+        AVG_CALORIES_LO = 17,
+        AVG_CALORIES_HI = 18,
+        DATA_BLE_PAYLOAD_SIZE = 19
+    }
+    const enum PM_Mux_Extra_Workout_Summary_Data_BLE_Payload {
+        LOG_DATE_LO = 0,
+        LOG_DATE_HI = 1,
+        LOG_TIME_LO = 2,
+        LOG_TIME_HI = 3,
+        SPLIT_INT_SIZE_LO = 4,
+        SPLIT_INT_SIZE_HI = 5,
+        SPLIT_INT_COUNT = 6,
+        WORK_CALORIES_LO = 7,
+        WORK_CALORIES_HI = 8,
+        WATTS_LO = 9,
+        WATTS_HI = 10,
+        TOTAL_REST_DISTANCE_LO = 11,
+        TOTAL_REST_DISTANCE_MID = 12,
+        TOTAL_REST_DISTANCE_HI = 13,
+        INTERVAL_REST_TIME_LO = 14,
+        INTERVAL_REST_TIME_HI = 15,
+        AVG_CALORIES_LO = 16,
+        AVG_CALORIES_HI = 17,
+        BLE_PAYLOAD_SIZE = 18
+    }
+    const enum PM_Mux_Extra_Workout_Summary2_Data_BLE_Payload {
+        LOG_DATE_LO = 0,
+        LOG_DATE_HI = 1,
+        LOG_TIME_LO = 2,
+        LOG_TIME_HI = 3,
+        AVG_PACE_LO = 4,
+        AVG_PACE_HI = 5,
+        GAME_ID = 6,
+        GAME_SCORE_LO = 7,
+        GAME_SCORE_HI = 8,
+        MACHINE_TYPE = 9,
+        DATA_BLE_PAYLOAD_SIZE = 10
+    }
+    const enum PM_Heart_Rate_Belt_Info_BLE_Payload {
+        MANUFACTURER_ID = 0,
+        DEVICE_TYPE = 1,
+        BELT_ID_LO = 2,
+        BELT_ID_MID_LO = 3,
+        BELT_ID_MID_HI = 4,
+        BELT_ID_HI = 5,
+        BLE_PAYLOAD_SIZE = 6
+    }
+    const enum PM_Multiplexed_Info_Type_ID {
+        ROWING_GENERAL_STATUS = 49,
+        ROWING_ADDITIONAL_STATUS1 = 50,
+        ROWING_ADDITIONAL_STATUS2 = 51,
+        STROKE_DATA_STATUS = 53,
+        EXTRA_STROKE_DATA_STATUS = 54,
+        SPLIT_INTERVAL_STATUS = 55,
+        EXTRA_SPLIT_INTERVAL_STATUS = 56,
+        WORKOUT_SUMMARY_STATUS = 57,
+        EXTRA_WORKOUT_SUMMARY_STATUS1 = 58,
+        HEART_RATE_BELT_INFO_STATUS = 59,
+        EXTRA_WORKOUT_SUMMARY_STATUS2 = 60
     }
 }
 declare namespace ergometer.usb {
@@ -1762,6 +2194,8 @@ declare namespace ergometer {
         private _monitor;
         private _commands;
         _resolve: () => void;
+        /** @internal */
+        _reject: (e: any) => void;
         _responseState: number;
         private _timeOutHandle;
         stuffByteActive: boolean;
@@ -1869,6 +2303,8 @@ declare namespace ergometer {
  */
 declare namespace ergometer {
     class UsbDevice {
+        /** @internal */
+        _internalDevice: usb.IDevice;
         vendorId: number;
         productId: number;
         productName: string;
@@ -2417,6 +2853,11 @@ declare namespace ergometer {
          * @param data
          */
         protected handleHeartRateBeltInformation(data: DataView): void;
+        /**
+         *
+         * @internal
+         */
+        protected deviceConnected(): void;
         handleCSafeNotifications(): Promise<void>;
         /**
          *
@@ -2439,6 +2880,8 @@ declare namespace ergometer {
         name: string;
         address: string;
         quality: number;
+        /** @internal */
+        _internalDevice: ble.IDevice;
     }
     interface HeartRateData {
         heartRate?: number;

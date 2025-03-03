@@ -6,7 +6,7 @@
     "outFile": "lib/ergometer.js",
     "outDir": "lib",
     "declaration": true,
-    "stripInternal": true,
+    "stripInternal": false,
     "moduleResolution": "node",
     "lib": [
       "es5",
