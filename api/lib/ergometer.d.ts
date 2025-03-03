@@ -2304,7 +2304,7 @@ declare namespace ergometer {
 declare namespace ergometer {
     class UsbDevice {
         /** @internal */
-        _internalDevice: usb.IDevice;
+        _internalDevice?: usb.IDevice;
         vendorId: number;
         productId: number;
         productName: string;
