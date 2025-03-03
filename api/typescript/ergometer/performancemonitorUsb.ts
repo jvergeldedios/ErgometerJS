@@ -25,7 +25,7 @@
 namespace ergometer {
   export class UsbDevice {
     /** @internal */
-    _internalDevice: usb.IDevice;
+    _internalDevice?: usb.IDevice;
     vendorId: number;
     productId: number;
     productName: string;
