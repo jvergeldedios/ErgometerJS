@@ -145,6 +145,7 @@ namespace ergometer {
     constructor(config: usb.IDriverConfig[] = usb.DEFAULT_DRIVER_CONFIGS) {
       super();
       this._config = config;
+      this.initDriver();
     }
 
     public getDriverConfigs(): usb.IDriverConfig[] {
@@ -153,7 +154,6 @@ namespace ergometer {
 
     protected initialize() {
       super.initialize();
-      this.initDriver();
       this._splitCommandsWhenToBig = false;
       this._receivePartialBuffers = false;
     }

@@ -3257,6 +3257,7 @@ var ergometer;
             _this._autoUpdating = false;
             _this._startPhaseTime = 0;
             _this._config = config;
+            _this.initDriver();
             return _this;
         }
         Object.defineProperty(PerformanceMonitorUsb.prototype, "strokeData", {
@@ -3330,7 +3331,6 @@ var ergometer;
         };
         PerformanceMonitorUsb.prototype.initialize = function () {
             _super.prototype.initialize.call(this);
-            this.initDriver();
             this._splitCommandsWhenToBig = false;
             this._receivePartialBuffers = false;
         };
