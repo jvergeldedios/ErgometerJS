@@ -80,7 +80,7 @@ namespace ergometer {
   export class PerformanceMonitorUsb extends PerformanceMonitorBase {
     private _driver: usb.IDriver;
     private _device: ergometer.usb.IDevice;
-    private _config: usb.IDriverConfig;
+    private _config: usb.IDriverConfig[];
 
     private _nSPMReads = 0;
     private _nSPM = 0;
@@ -142,38 +142,18 @@ namespace ergometer {
         PerformanceMonitorUsb.canUseCordovaHid()
       );
     }
-    constructor(config: usb.IDriverConfig = usb.DEFAULT_DRIVER_CONFIG) {
+    constructor(config: usb.IDriverConfig[] = usb.DEFAULT_DRIVER_CONFIGS) {
       super();
       this._config = config;
+      this.initDriver();
     }
 
-    public getDriverConfig(): usb.IDriverConfig {
+    public getDriverConfigs(): usb.IDriverConfig[] {
       return this._config;
-    }
-
-    public setDriverConfig(config: usb.IDriverConfig): void {
-      // Merge the new vendor IDs with the default ones, ensuring Concept2's ID is included
-      const mergedConfig: usb.IDriverConfig = {
-        vendorIds: Array.from(
-          new Set([
-            ...usb.DEFAULT_DRIVER_CONFIG.vendorIds,
-            ...(config.vendorIds || []),
-          ])
-        ),
-      };
-
-      this._config = mergedConfig;
-      if (this._driver && "setConfig" in this._driver) {
-        this._driver.setConfig(mergedConfig);
-      } else {
-        // If we don't have a driver yet or need to reinitialize with new config
-        this.initDriver();
-      }
     }
 
     protected initialize() {
       super.initialize();
-      this.initDriver();
       this._splitCommandsWhenToBig = false;
       this._receivePartialBuffers = false;
     }
@@ -181,12 +161,9 @@ namespace ergometer {
     private initDriver() {
       if (PerformanceMonitorUsb.canUseNodeHid()) {
         this._driver = new ergometer.usb.DriverNodeHid(this._config);
-      } else if (PerformanceMonitorUsb.canUseCordovaHid()) {
-        this._driver = new ergometer.usb.DriverCordovaHid(this._config);
-      } else if (PerformanceMonitorUsb.canUseWebHid()) {
-        this._driver = new ergometer.usb.DriverWebHid(this._config);
       }
     }
+
     private checkInitDriver() {
       if (!this._driver) this.initDriver();
       if (!this._driver) throw "No suitable driver found";
@@ -316,7 +293,7 @@ namespace ergometer {
     }
 
     protected getPacketSize(): number {
-      return usb.USB_CSAVE_SIZE - 1;
+      return this._device.driverConfig.usbCSaveSize - 1;
     }
 
     protected highResolutionUpdate(): Promise<void> {

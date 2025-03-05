@@ -8,6 +8,7 @@ namespace ergometer.usb {
     readonly productId: number;
     readonly productName: string;
     readonly serialNumber: string;
+    readonly driverConfig: IDriverConfig;
 
     open(
       disconnect: DisconnectFunc,

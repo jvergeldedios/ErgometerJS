@@ -9,9 +9,11 @@ namespace ergometer.usb {
     public productId: number;
     public productName: string;
     public serialNumber: string;
+    public driverConfig: IDriverConfig;
 
-    constructor(deviceInfo) {
+    constructor(deviceInfo, config: IDriverConfig) {
       this._deviceInfo = deviceInfo;
+      this.driverConfig = config;
     }
     public callError(err: any) {
       if (this._onError) this._onError(err);
@@ -47,16 +49,16 @@ namespace ergometer.usb {
     public sendData(data: ArrayBuffer): Promise<void> {
       return new Promise<void>((resolve, reject) => {
         try {
-          if (data.byteLength > USB_CSAVE_SIZE)
-            throw `Trying to send to much data, the buffer must be smaller or equal to ${USB_CSAVE_SIZE} and is ${data.byteLength}`;
-          var buf = new ArrayBuffer(WRITE_BUF_SIZE);
+          if (data.byteLength > this.driverConfig.usbCSaveSize)
+            throw `Trying to send to much data, the buffer must be smaller or equal to ${this.driverConfig.usbCSaveSize} and is ${data.byteLength}`;
+          var buf = new ArrayBuffer(this.driverConfig.writeBufSize);
           var view = new Int8Array(buf);
-          view.set([REPORT_TYPE], 0);
+          view.set([this.driverConfig.reportType], 0);
           view.set(new Int8Array(data), 1);
           var written = this._hid.write(Array.from(view));
 
-          if (written != WRITE_BUF_SIZE)
-            throw `Only ${written} bytes written to usb device. it should be ${WRITE_BUF_SIZE}`;
+          if (written != this.driverConfig.writeBufSize)
+            throw `Only ${written} bytes written to usb device. it should be ${this.driverConfig.writeBufSize}`;
           //resolve the send
           resolve();
           //start listening to the result
@@ -74,17 +76,17 @@ namespace ergometer.usb {
           else {
             if (
               inputData &&
-              inputData.length >= WRITE_BUF_SIZE &&
-              inputData[0] == REPORT_TYPE
+              inputData.length >= this.driverConfig.writeBufSize &&
+              inputData[0] == this.driverConfig.reportType
             ) {
               //copy all results into a buffer of 121
-              var endByte = WRITE_BUF_SIZE - 1;
+              var endByte = this.driverConfig.writeBufSize - 1;
               while (endByte >= 0 && inputData[endByte] == 0) endByte--;
               if (
                 endByte >= 0 &&
                 inputData[endByte] == csafe.defs.FRAME_END_BYTE
               ) {
-                var buf = new ArrayBuffer(WRITE_BUF_SIZE);
+                var buf = new ArrayBuffer(this.driverConfig.writeBufSize);
                 var ar = new Int8Array(buf);
                 ar.set(inputData, 0);
                 //return the the data except for the first byte
@@ -101,10 +103,16 @@ namespace ergometer.usb {
   }
 
   export class DriverNodeHid implements IDriver {
-    private _config: IDriverConfig;
+    private _config: IDriverConfig[];
+    private _vendorIds: number[];
 
-    constructor(config: IDriverConfig = DEFAULT_DRIVER_CONFIG) {
+    constructor(config: IDriverConfig[]) {
       this._config = config;
+      this._vendorIds = config.map((c) => c.vendorId);
+    }
+
+    public getDriverConfigByVendorId(vendorId: number): IDriverConfig {
+      return this._config.find((c) => c.vendorId === vendorId);
     }
 
     public requestDevics(): Promise<Devices> {
@@ -113,8 +121,11 @@ namespace ergometer.usb {
         var devices = nodehid.devices();
         devices.forEach((device) => {
           //add all devices with matching vendor IDs
-          if (this._config.vendorIds.indexOf(device.vendorId) !== -1) {
-            var deviceInfo = new DeviceNodeHid(device);
+          if (this._vendorIds.indexOf(device.vendorId) !== -1) {
+            var deviceInfo = new DeviceNodeHid(
+              device,
+              this.getDriverConfigByVendorId(device.vendorId)
+            );
             deviceInfo.serialNumber = device.serialNumber;
             deviceInfo.productId = device.productId;
             deviceInfo.vendorId = device.vendorId;

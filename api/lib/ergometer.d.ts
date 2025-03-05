@@ -889,14 +889,13 @@ declare namespace ergometer.ble {
     }
 }
 declare namespace ergometer.usb {
-    const USB_CSAVE_SIZE = 120;
-    const WRITE_BUF_SIZE = 121;
-    const REPORT_TYPE = 2;
-    const CONCEPT2_VENDOR_ID = 6052;
     interface IDriverConfig {
-        vendorIds?: number[];
+        vendorId: number;
+        usbCSaveSize: number;
+        writeBufSize: number;
+        reportType: number;
     }
-    const DEFAULT_DRIVER_CONFIG: IDriverConfig;
+    const DEFAULT_DRIVER_CONFIGS: IDriverConfig[];
 }
 declare namespace ergometer.usb {
     type DisconnectFunc = () => void;
@@ -906,6 +905,7 @@ declare namespace ergometer.usb {
         readonly productId: number;
         readonly productName: string;
         readonly serialNumber: string;
+        readonly driverConfig: IDriverConfig;
         open(disconnect: DisconnectFunc, error: (err: any) => void, receiveData: (data: DataView) => void): Promise<void>;
         close(): Promise<void>;
         sendData(data: ArrayBuffer): Promise<void>;
@@ -926,7 +926,8 @@ declare namespace ergometer.usb {
         productId: number;
         productName: string;
         serialNumber: string;
-        constructor(deviceInfo: any);
+        driverConfig: IDriverConfig;
+        constructor(deviceInfo: any, config: IDriverConfig);
         callError(err: any): void;
         private _receiveData;
         open(disconnect: DisconnectFunc, error: (err: any) => void, receiveData: (data: DataView) => void): Promise<void>;
@@ -936,60 +937,9 @@ declare namespace ergometer.usb {
     }
     class DriverNodeHid implements IDriver {
         private _config;
-        constructor(config?: IDriverConfig);
-        requestDevics(): Promise<Devices>;
-    }
-}
-declare namespace ergometer.usb {
-    class DeviceWebHid implements IDevice {
-        private _disconnect;
-        private _onError;
-        private _deviceInfo;
-        vendorId: number;
-        productId: number;
-        productName: string;
-        serialNumber: string;
-        constructor(deviceInfo: any);
-        callError(err: any): void;
-        private disconnected;
-        private received;
-        private _receiveData;
-        open(disconnect: DisconnectFunc, error: (err: any) => void, receiveData: (data: DataView) => void): Promise<void>;
-        private detachDisconnect;
-        close(): Promise<void>;
-        sendData(data: ArrayBuffer): Promise<void>;
-        private receivedReport;
-    }
-    class DriverWebHid implements IDriver {
-        private _config;
-        constructor(config?: IDriverConfig);
-        getConfig(): IDriverConfig;
-        setConfig(config: IDriverConfig): void;
-        requestDevics(): Promise<Devices>;
-    }
-}
-declare namespace ergometer.usb {
-    class DeviceCordovaHid implements IDevice {
-        private _device;
-        private _disconnect;
-        private _onError;
-        vendorId: number;
-        productId: number;
-        productName: string;
-        serialNumber: string;
-        constructor(device: any);
-        callError(err: any): void;
-        private disconnected;
-        private _receiveData;
-        open(disconnect: DisconnectFunc, error: (err: any) => void, receiveData: (data: DataView) => void): Promise<void>;
-        close(): Promise<void>;
-        sendData(data: ArrayBuffer): Promise<void>;
-    }
-    class DriverCordovaHid implements IDriver {
-        private _config;
-        constructor(config?: IDriverConfig);
-        getConfig(): IDriverConfig;
-        setConfig(config: IDriverConfig): void;
+        private _vendorIds;
+        constructor(config: IDriverConfig[]);
+        getDriverConfigByVendorId(vendorId: number): IDriverConfig;
         requestDevics(): Promise<Devices>;
     }
 }
@@ -2373,9 +2323,8 @@ declare namespace ergometer {
         static canUseWebHid(): boolean;
         static canUseCordovaHid(): boolean;
         static canUseUsb(): boolean;
-        constructor(config?: usb.IDriverConfig);
-        getDriverConfig(): usb.IDriverConfig;
-        setDriverConfig(config: usb.IDriverConfig): void;
+        constructor(config?: usb.IDriverConfig[]);
+        getDriverConfigs(): usb.IDriverConfig[];
         protected initialize(): void;
         private initDriver;
         private checkInitDriver;
