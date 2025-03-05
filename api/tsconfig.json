@@ -37,8 +37,6 @@
     "typescript/ergometer/usb/CSaveHidUtils.ts",
     "typescript/ergometer/usb/Driver.ts",
     "typescript/ergometer/usb/DriverNodeHid.ts",
-    "typescript/ergometer/usb/DriverWebHid.ts",
-    "typescript/ergometer/usb/DriverCordovaHid.ts",
     "typescript/ergometer/csafe/typedefinitions.ts",
     "typescript/ergometer/csafe/command_core.ts",
     "typescript/ergometer/csafe/long_commands.ts",
