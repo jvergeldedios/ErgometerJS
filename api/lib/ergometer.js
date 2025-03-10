@@ -1847,6 +1847,7 @@ var ergometer;
                             if (inputData &&
                                 inputData.length >= _this.driverConfig.writeBufSize &&
                                 inputData[0] == _this.driverConfig.reportType) {
+                                console.log("inputData length", inputData.length);
                                 //copy all results into a buffer of 121
                                 var endByte = _this.driverConfig.writeBufSize - 1;
                                 while (endByte >= 0 && inputData[endByte] == 0)
