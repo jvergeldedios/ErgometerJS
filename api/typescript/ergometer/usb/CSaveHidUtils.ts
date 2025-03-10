@@ -17,6 +17,7 @@ namespace ergometer.usb {
     vendorId: 7676,
     usbCSaveSize: 120,
     writeBufSize: 501,
+    // writeBufSize: 65,
     reportType: 2,
   };
 
