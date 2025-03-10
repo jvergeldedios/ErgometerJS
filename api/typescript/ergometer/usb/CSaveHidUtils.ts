@@ -16,7 +16,7 @@ namespace ergometer.usb {
   const ROGUE_DRIVER_CONFIG: IDriverConfig = {
     vendorId: 7676,
     usbCSaveSize: 120,
-    writeBufSize: 65,
+    writeBufSize: 501,
     reportType: 2,
   };
 

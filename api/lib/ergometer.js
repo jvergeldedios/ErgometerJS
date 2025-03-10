@@ -1770,7 +1770,7 @@ var ergometer;
         var ROGUE_DRIVER_CONFIG = {
             vendorId: 7676,
             usbCSaveSize: 120,
-            writeBufSize: 65,
+            writeBufSize: 501,
             reportType: 2,
         };
         // Full list of supported driver configurations
