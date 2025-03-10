@@ -79,6 +79,7 @@ namespace ergometer.usb {
               inputData.length >= this.driverConfig.writeBufSize &&
               inputData[0] == this.driverConfig.reportType
             ) {
+              console.log("inputData length", inputData.length);
               //copy all results into a buffer of 121
               var endByte = this.driverConfig.writeBufSize - 1;
               while (endByte >= 0 && inputData[endByte] == 0) endByte--;
