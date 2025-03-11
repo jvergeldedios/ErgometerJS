@@ -1770,7 +1770,8 @@ var ergometer;
         var ROGUE_DRIVER_CONFIG = {
             vendorId: 7676,
             usbCSaveSize: 120,
-            writeBufSize: 65,
+            writeBufSize: 501,
+            // writeBufSize: 65,
             reportType: 2,
         };
         // Full list of supported driver configurations
@@ -2801,7 +2802,9 @@ var ergometer;
                 var prevCommand = -1;
                 var prevCommandIndex = -1;
                 if (_this.sortCommands)
-                    rawCommandBuffer.sort(function (first, next) { return first.command - next.command; });
+                    rawCommandBuffer.sort(function (first, next) {
+                        return first.command - next.command;
+                    });
                 rawCommandBuffer.forEach(function (command) {
                     var commandMerged = false;
                     var commandIndex = commandArray.length;
@@ -2819,7 +2822,7 @@ var ergometer;
                                 //this is more efficent
                                 var dataLength = 1;
                                 if (command.data && command.data.length > 0)
-                                    dataLength += (command.data.length + 1);
+                                    dataLength += command.data.length + 1;
                                 commandArray[prevCommandIndex + 1] += dataLength;
                                 commandMerged = true;
                             }
@@ -2851,7 +2854,7 @@ var ergometer;
                     commandArray: commandArray,
                     resolve: resolve,
                     reject: reject,
-                    rawCommandBuffer: rawCommandBuffer
+                    rawCommandBuffer: rawCommandBuffer,
                 });
                 _this.checkSendBuffer();
                 //send all the csafe commands in one go
@@ -2864,9 +2867,10 @@ var ergometer;
         PerformanceMonitorBase.prototype.checkSendBuffer = function () {
             //make sure that only one buffer is send/received at a time
             //when something to send and all received then send the next
-            if (this._waitResonseBuffers.length == 0 && this._sendBufferQueue.length > 0) {
+            if (this._waitResonseBuffers.length == 0 &&
+                this._sendBufferQueue.length > 0) {
                 //directly add a wait buffer so no others can send commands
-                //extract the send data 
+                //extract the send data
                 var sendData = this._sendBufferQueue.shift();
                 this.sendBufferFromQueue(sendData);
             }
@@ -2886,8 +2890,7 @@ var ergometer;
             var waitBuffer = new WaitResponseBuffer(this, resolve, reject, sendData.rawCommandBuffer, this._commandTimeout);
             this._waitResonseBuffers.push(waitBuffer);
             //then send the data
-            this.sendCsafeCommands(sendData.commandArray)
-                .catch(function (e) {
+            this.sendCsafeCommands(sendData.commandArray).catch(function (e) {
                 //When it could not be send remove it
                 _this.removeResponseBuffer(waitBuffer);
                 //send the error to all items
@@ -2907,9 +2910,9 @@ var ergometer;
                     var newArray = [];
                     for (var i = 0; i < byteArray.length; i++) {
                         var value = byteArray[i];
-                        if (value >= 0xF0 && value <= 0xF3) {
-                            newArray.push(0xF3);
-                            newArray.push(value - 0xF0);
+                        if (value >= 0xf0 && value <= 0xf3) {
+                            newArray.push(0xf3);
+                            newArray.push(value - 0xf0);
                             if (_this.logLevel == ergometer.LogLevel.trace)
                                 _this.traceInfo("stuffed to byte:" + value);
                         }
@@ -2918,8 +2921,11 @@ var ergometer;
                     }
                     //prepare all the data to be send in one array
                     //begin with a start byte ad end with a checksum and an end byte
-                    var bytesToSend = ([ergometer.csafe.defs.FRAME_START_BYTE].concat(byteArray)).concat([checksum, ergometer.csafe.defs.FRAME_END_BYTE]);
-                    if (_this._splitCommandsWhenToBig && bytesToSend.length > _this.getPacketSize())
+                    var bytesToSend = [ergometer.csafe.defs.FRAME_START_BYTE]
+                        .concat(byteArray)
+                        .concat([checksum, ergometer.csafe.defs.FRAME_END_BYTE]);
+                    if (_this._splitCommandsWhenToBig &&
+                        bytesToSend.length > _this.getPacketSize())
                         reject("Csafe commands with length ".concat(bytesToSend.length, " does not fit into buffer with size ").concat(_this.getPacketSize(), " "));
                     else {
                         var sendBytesIndex = 0;
@@ -2937,7 +2943,8 @@ var ergometer;
                             }
                             if (_this.logLevel == ergometer.LogLevel.trace)
                                 _this.traceInfo("send csafe: " + ergometer.utils.typedArrayToHexString(buffer, true));
-                            _this.driver_write(dataView).then(function () {
+                            _this.driver_write(dataView)
+                                .then(function () {
                                 _this.traceInfo("csafe command send");
                                 if (sendBytesIndex >= bytesToSend.length) {
                                     //resolve when all data is send
@@ -2962,12 +2969,11 @@ var ergometer;
                 this.traceInfo("next buffer: count=" + this._waitResonseBuffers.length);
             if (this._waitResonseBuffers.length > 0) {
                 var waitBuffer = this._waitResonseBuffers[0];
-                //if the first then do not wait any more                               
+                //if the first then do not wait any more
                 waitBuffer.processedBuffer();
             }
             if (this._waitResonseBuffers.length > 0) {
                 result = this._waitResonseBuffers[0];
-                ;
             }
             return result;
         };
@@ -2976,22 +2982,24 @@ var ergometer;
         //if they are not in the same order this routine tries to match them
         PerformanceMonitorBase.prototype.handeReceivedDriverData = function (dataView) {
             //skipp empty 0 ble blocks
-            if (this._waitResonseBuffers.length > 0 && (dataView.byteLength != 1 || dataView.getUint8(0) != 0)) {
+            if (this._waitResonseBuffers.length > 0 &&
+                (dataView.byteLength != 1 || dataView.getUint8(0) != 0)) {
                 var waitBuffer = this._waitResonseBuffers[0];
                 if (this.logLevel == ergometer.LogLevel.trace)
-                    this.traceInfo("continious receive csafe: " + ergometer.utils.typedArrayToHexString(dataView.buffer, true));
+                    this.traceInfo("continious receive csafe: " +
+                        ergometer.utils.typedArrayToHexString(dataView.buffer, true));
                 var i = 0;
                 var moveToNextBuffer = false;
                 while (i < dataView.byteLength && !moveToNextBuffer) {
                     var currentByte = dataView.getUint8(i);
                     if (waitBuffer.stuffByteActive && currentByte <= 3) {
-                        currentByte = 0xF0 + currentByte; //unstuff
+                        currentByte = 0xf0 + currentByte; //unstuff
                         if (this.logLevel == ergometer.LogLevel.trace)
                             this.traceInfo("unstuffed to byte:" + currentByte);
                         waitBuffer.stuffByteActive = false;
                     }
                     else {
-                        waitBuffer.stuffByteActive = (currentByte == 0xF3);
+                        waitBuffer.stuffByteActive = currentByte == 0xf3;
                         if (waitBuffer.stuffByteActive && this.logLevel == ergometer.LogLevel.trace)
                             this.traceInfo("start stuff byte");
                     }
@@ -3015,38 +3023,43 @@ var ergometer;
                                 waitBuffer.calcCheck = 0;
                                 break;
                             }
-                            case 1 /* FrameState.statusByte */:
-                                {
-                                    waitBuffer.frameState = 2 /* FrameState.parseCommand */;
-                                    waitBuffer.statusByte = currentByte;
-                                    waitBuffer.monitorStatus = currentByte & ergometer.csafe.defs.SLAVESTATE_MSK;
-                                    waitBuffer.prevFrameState = ((currentByte & ergometer.csafe.defs.PREVFRAMESTATUS_MSK) >> 4);
-                                    if (this.logLevel == ergometer.LogLevel.trace)
-                                        this.traceInfo("monitor status: ".concat(waitBuffer.monitorStatus, ",prev frame state: ").concat(waitBuffer.prevFrameState));
-                                    waitBuffer._responseState = currentByte;
-                                    break;
-                                }
+                            case 1 /* FrameState.statusByte */: {
+                                waitBuffer.frameState = 2 /* FrameState.parseCommand */;
+                                waitBuffer.statusByte = currentByte;
+                                waitBuffer.monitorStatus =
+                                    currentByte & ergometer.csafe.defs.SLAVESTATE_MSK;
+                                waitBuffer.prevFrameState =
+                                    (currentByte & ergometer.csafe.defs.PREVFRAMESTATUS_MSK) >> 4;
+                                if (this.logLevel == ergometer.LogLevel.trace)
+                                    this.traceInfo("monitor status: ".concat(waitBuffer.monitorStatus, ",prev frame state: ").concat(waitBuffer.prevFrameState));
+                                waitBuffer._responseState = currentByte;
+                                break;
+                            }
                             case 2 /* FrameState.parseCommand */: {
                                 waitBuffer.command = currentByte;
                                 waitBuffer.frameState = 3 /* FrameState.parseCommandLength */;
-                                //the real command follows so skip this 
+                                //the real command follows so skip this
                                 break;
                             }
                             case 3 /* FrameState.parseCommandLength */: {
                                 //first work arround strange results where the status byte is the same
                                 //as the the command and the frame directly ends, What is the meaning of
                                 //this? some kind of status??
-                                if (waitBuffer.statusByte == waitBuffer.command && currentByte == ergometer.csafe.defs.FRAME_END_BYTE) {
+                                if (waitBuffer.statusByte == waitBuffer.command &&
+                                    currentByte == ergometer.csafe.defs.FRAME_END_BYTE) {
                                     waitBuffer.command = 0; //do not check checksum
                                     moveToNextBuffer = true;
                                 }
-                                else if (i == dataView.byteLength - 1 && currentByte == ergometer.csafe.defs.FRAME_END_BYTE) {
+                                else if (i == dataView.byteLength - 1 &&
+                                    currentByte == ergometer.csafe.defs.FRAME_END_BYTE) {
                                     var checksum = waitBuffer.command;
                                     //remove the last 2 bytes from the checksum which was added too much
                                     waitBuffer.calcCheck = waitBuffer.calcCheck ^ currentByte;
-                                    waitBuffer.calcCheck = waitBuffer.calcCheck ^ waitBuffer.command;
+                                    waitBuffer.calcCheck =
+                                        waitBuffer.calcCheck ^ waitBuffer.command;
                                     //check the calculated with the message checksum
-                                    if (this._checksumCheckEnabled && checksum != waitBuffer.calcCheck)
+                                    if (this._checksumCheckEnabled &&
+                                        checksum != waitBuffer.calcCheck)
                                         this.handleError("Wrong checksum ".concat(ergometer.utils.toHexString(checksum, 1), " expected ").concat(ergometer.utils.toHexString(waitBuffer.calcCheck, 1), " "));
                                     waitBuffer.command = 0; //do not check checksum
                                     moveToNextBuffer = true;
@@ -3077,12 +3090,13 @@ var ergometer;
                                     waitBuffer.commandDataIndex = 0;
                                     waitBuffer.commandData = new Uint8Array(waitBuffer.nextDataLength);
                                 }
-                                waitBuffer.commandData[waitBuffer.commandDataIndex] = currentByte;
+                                waitBuffer.commandData[waitBuffer.commandDataIndex] =
+                                    currentByte;
                                 waitBuffer.nextDataLength--;
                                 waitBuffer.commandDataIndex++;
                                 if (waitBuffer.nextDataLength == 0) {
-                                    if (waitBuffer.command < ergometer.csafe.defs.CTRL_CMD_SHORT_MIN
-                                        && i < waitBuffer.endCommand)
+                                    if (waitBuffer.command < ergometer.csafe.defs.CTRL_CMD_SHORT_MIN &&
+                                        i < waitBuffer.endCommand)
                                         waitBuffer.frameState = 4 /* FrameState.parseDetailCommand */;
                                     else
                                         waitBuffer.frameState = 2 /* FrameState.parseCommand */;
@@ -3090,7 +3104,7 @@ var ergometer;
                                         waitBuffer.receivedCSaveCommand({
                                             command: waitBuffer.command,
                                             detailCommand: waitBuffer.detailCommand,
-                                            data: waitBuffer.commandData
+                                            data: waitBuffer.commandData,
                                         });
                                     }
                                     catch (e) {
@@ -3110,13 +3124,15 @@ var ergometer;
                     //this is for blue tooth
                     if (moveToNextBuffer)
                         waitBuffer = this.moveToNextBuffer();
-                    else if (dataView.byteLength != this.getPacketSize() && waitBuffer && waitBuffer.frameState != 0 /* FrameState.initial */) {
+                    else if (dataView.byteLength != this.getPacketSize() &&
+                        waitBuffer &&
+                        waitBuffer.frameState != 0 /* FrameState.initial */) {
                         waitBuffer = this.moveToNextBuffer();
                         this.handleError("wrong csafe frame ending.");
                     }
                 }
                 else {
-                    //for usb all should be processd, 
+                    //for usb all should be processd,
                     //so allways move to the next buffer at the end of parsing
                     waitBuffer = this.moveToNextBuffer();
                 }
@@ -3129,7 +3145,7 @@ var ergometer;
             var _this = this;
             //init the buffer when needed
             var csafeBuffer = {
-                rawCommands: []
+                rawCommands: [],
             };
             csafeBuffer.send = function (sucess, error) {
                 return _this.sendCSafeBuffer(csafeBuffer)
