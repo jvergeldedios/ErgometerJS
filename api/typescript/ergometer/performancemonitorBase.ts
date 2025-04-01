@@ -33,6 +33,7 @@ namespace ergometer {
     resolve: () => void;
     reject: (e) => void;
     rawCommandBuffer: IRawCommand[];
+    extended?: { sourceAddress: number; destinationAddress: number };
   }
   export interface ParsedCSafeCommand {
     command: number;
@@ -267,7 +268,8 @@ namespace ergometer {
      * @returns {Promise<void>|Promise} use promis instead of success and error function
      */
     public sendCSafeBuffer(
-      csafeBuffer: ergometer.csafe.IBuffer
+      csafeBuffer: ergometer.csafe.IBuffer,
+      extended?: { sourceAddress: number; destinationAddress: number }
     ): Promise<void> {
       return new Promise((resolve, reject) => {
         //prepare the array to be send
@@ -328,6 +330,7 @@ namespace ergometer {
           resolve: resolve,
           reject: reject,
           rawCommandBuffer: rawCommandBuffer,
+          extended,
         });
         this.checkSendBuffer();
         //send all the csafe commands in one go
@@ -380,7 +383,10 @@ namespace ergometer {
         this.checkSendBufferAtEnd();
       });
     }
-    protected sendCsafeCommands(byteArray: number[]): Promise<void> {
+    protected sendCsafeCommands(
+      byteArray: number[],
+      extended?: { sourceAddress: number; destinationAddress: number }
+    ): Promise<void> {
       return new Promise<void>((resolve, reject) => {
         //is there anything to send?
         if (byteArray && byteArray.length > 0) {
@@ -401,7 +407,17 @@ namespace ergometer {
           }
           //prepare all the data to be send in one array
           //begin with a start byte ad end with a checksum and an end byte
-          var bytesToSend: number[] = [csafe.defs.FRAME_START_BYTE]
+          var bytesToSend: number[];
+          if (extended) {
+            bytesToSend = [
+              csafe.defs.EXT_FRAME_START_BYTE,
+              extended.destinationAddress,
+              extended.sourceAddress,
+            ];
+          } else {
+            bytesToSend = [csafe.defs.FRAME_START_BYTE];
+          }
+          bytesToSend = bytesToSend
             .concat(byteArray)
             .concat([checksum, csafe.defs.FRAME_END_BYTE]);
           if (
@@ -676,6 +692,23 @@ namespace ergometer {
 
       csafeBuffer.send = (sucess?: () => void, error?: ErrorHandler) => {
         return this.sendCSafeBuffer(csafeBuffer)
+          .then(sucess)
+          .catch((e) => {
+            this.handleError(e);
+            if (error) error(e);
+            return Promise.reject(e);
+          });
+      };
+      csafeBuffer.sendExtended = (
+        sourceAddress: number,
+        destinationAddress: number,
+        sucess?: () => void,
+        error?: ErrorHandler
+      ) => {
+        return this.sendCSafeBuffer(csafeBuffer, {
+          sourceAddress,
+          destinationAddress,
+        })
           .then(sucess)
           .catch((e) => {
             this.handleError(e);

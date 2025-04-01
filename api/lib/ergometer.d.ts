@@ -1457,6 +1457,7 @@ declare namespace ergometer.csafe {
         rawCommands: IRawCommand[];
         addRawCommand(info: IRawCommand): any;
         send(success?: () => void, error?: ErrorHandler): Promise<void>;
+        sendExtended(sourceAddress: number, destinationAddress: number, success?: () => void, error?: ErrorHandler): Promise<void>;
     }
     interface IResponseBuffer {
         monitorStatus: ergometer.csafe.SlaveState;
@@ -2112,6 +2113,10 @@ declare namespace ergometer {
         resolve: () => void;
         reject: (e: any) => void;
         rawCommandBuffer: IRawCommand[];
+        extended?: {
+            sourceAddress: number;
+            destinationAddress: number;
+        };
     }
     interface ParsedCSafeCommand {
         command: number;
@@ -2217,11 +2222,17 @@ declare namespace ergometer {
          * @param error
          * @returns {Promise<void>|Promise} use promis instead of success and error function
          */
-        sendCSafeBuffer(csafeBuffer: ergometer.csafe.IBuffer): Promise<void>;
+        sendCSafeBuffer(csafeBuffer: ergometer.csafe.IBuffer, extended?: {
+            sourceAddress: number;
+            destinationAddress: number;
+        }): Promise<void>;
         protected checkSendBufferAtEnd(): void;
         protected checkSendBuffer(): void;
         protected sendBufferFromQueue(sendData: SendBufferQueued): void;
-        protected sendCsafeCommands(byteArray: number[]): Promise<void>;
+        protected sendCsafeCommands(byteArray: number[], extended?: {
+            sourceAddress: number;
+            destinationAddress: number;
+        }): Promise<void>;
         protected moveToNextBuffer(): WaitResponseBuffer;
         handeReceivedDriverData(dataView: DataView): void;
         protected getPacketSize(): number;
