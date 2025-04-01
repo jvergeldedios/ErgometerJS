@@ -2132,7 +2132,7 @@ var ergometer;
                         waitForResponse: false,
                         command: command,
                         data: setParams(params),
-                        onError: params.onError
+                        onError: params.onError,
                     });
                     return buffer;
                 };
@@ -2147,7 +2147,7 @@ var ergometer;
                         command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
                         detailCommand: command,
                         data: setParams(params),
-                        onError: params.onError
+                        onError: params.onError,
                     });
                     return buffer;
                 };
@@ -2161,8 +2161,10 @@ var ergometer;
                         waitForResponse: true,
                         command: 26 /* csafe.defs.LONG_CFG_CMDS.SETUSERCFG1_CMD */,
                         detailCommand: detailCommand,
-                        onDataReceived: function (data) { params.onDataReceived(converter(data)); },
-                        onError: params.onError
+                        onDataReceived: function (data) {
+                            params.onDataReceived(converter(data));
+                        },
+                        onError: params.onError,
                     });
                     return buffer;
                 };
@@ -2175,8 +2177,10 @@ var ergometer;
                     buffer.addRawCommand({
                         waitForResponse: true,
                         command: command,
-                        onDataReceived: function (data) { params.onDataReceived(converter(data)); },
-                        onError: params.onError
+                        onDataReceived: function (data) {
+                            params.onDataReceived(converter(data));
+                        },
+                        onError: params.onError,
                     });
                     return buffer;
                 };
@@ -2184,7 +2188,7 @@ var ergometer;
         }
         csafe.registerStandardShortGet = registerStandardShortGet;
         //
-        //Proprietary Short Set Configuration Commands 
+        //Proprietary Short Set Configuration Commands
         //C2 Proprietary Long Set Configuration Commands
         function registerStandardProprietarySetConfig(functionName, command, setParams) {
             csafe.commandManager.register(function (buffer, monitor) {
@@ -2194,14 +2198,14 @@ var ergometer;
                         command: 118 /* csafe.defs.LONG_PMPROPRIETARY_CMDS.SETPMCFG_CMD */,
                         detailCommand: command,
                         data: setParams(params),
-                        onError: params.onError
+                        onError: params.onError,
                     });
                     return buffer;
                 };
             });
         }
         csafe.registerStandardProprietarySetConfig = registerStandardProprietarySetConfig;
-        //Proprietary Short Set Data Commands 
+        //Proprietary Short Set Data Commands
         //C2 Proprietary Long Set Data Commands
         function registerStandardProprietarySetData(functionName, command, setParams) {
             csafe.commandManager.register(function (buffer, monitor) {
@@ -2211,7 +2215,7 @@ var ergometer;
                         command: 119 /* csafe.defs.LONG_PMPROPRIETARY_CMDS.SETPMDATA_CMD */,
                         detailCommand: command,
                         data: setParams(params),
-                        onError: params.onError
+                        onError: params.onError,
                     });
                     return buffer;
                 };
@@ -2226,8 +2230,10 @@ var ergometer;
                         waitForResponse: true,
                         command: 126 /* csafe.defs.PROPRIETARY_GET_CMDS.GETPMCFG_CMD */,
                         detailCommand: detailCommand,
-                        onDataReceived: function (data) { params.onDataReceived(converter(data)); },
-                        onError: params.onError
+                        onDataReceived: function (data) {
+                            params.onDataReceived(converter(data));
+                        },
+                        onError: params.onError,
                     });
                     return buffer;
                 };
@@ -2242,8 +2248,10 @@ var ergometer;
                         waitForResponse: true,
                         command: 127 /* csafe.defs.PROPRIETARY_GET_CMDS.GETPMDATA_CMD */,
                         detailCommand: detailCommand,
-                        onDataReceived: function (data) { params.onDataReceived(converter(data)); },
-                        onError: params.onError
+                        onDataReceived: function (data) {
+                            params.onDataReceived(converter(data));
+                        },
+                        onError: params.onError,
                     });
                     return buffer;
                 };
@@ -2793,7 +2801,7 @@ var ergometer;
          * @param error
          * @returns {Promise<void>|Promise} use promis instead of success and error function
          */
-        PerformanceMonitorBase.prototype.sendCSafeBuffer = function (csafeBuffer) {
+        PerformanceMonitorBase.prototype.sendCSafeBuffer = function (csafeBuffer, extended) {
             var _this = this;
             return new Promise(function (resolve, reject) {
                 //prepare the array to be send
@@ -2855,6 +2863,7 @@ var ergometer;
                     resolve: resolve,
                     reject: reject,
                     rawCommandBuffer: rawCommandBuffer,
+                    extended: extended,
                 });
                 _this.checkSendBuffer();
                 //send all the csafe commands in one go
@@ -2898,7 +2907,7 @@ var ergometer;
                 _this.checkSendBufferAtEnd();
             });
         };
-        PerformanceMonitorBase.prototype.sendCsafeCommands = function (byteArray) {
+        PerformanceMonitorBase.prototype.sendCsafeCommands = function (byteArray, extended) {
             var _this = this;
             return new Promise(function (resolve, reject) {
                 //is there anything to send?
@@ -2921,7 +2930,18 @@ var ergometer;
                     }
                     //prepare all the data to be send in one array
                     //begin with a start byte ad end with a checksum and an end byte
-                    var bytesToSend = [ergometer.csafe.defs.FRAME_START_BYTE]
+                    var bytesToSend;
+                    if (extended) {
+                        bytesToSend = [
+                            ergometer.csafe.defs.EXT_FRAME_START_BYTE,
+                            extended.destinationAddress,
+                            extended.sourceAddress,
+                        ];
+                    }
+                    else {
+                        bytesToSend = [ergometer.csafe.defs.FRAME_START_BYTE];
+                    }
+                    bytesToSend = bytesToSend
                         .concat(byteArray)
                         .concat([checksum, ergometer.csafe.defs.FRAME_END_BYTE]);
                     if (_this._splitCommandsWhenToBig &&
@@ -3149,6 +3169,19 @@ var ergometer;
             };
             csafeBuffer.send = function (sucess, error) {
                 return _this.sendCSafeBuffer(csafeBuffer)
+                    .then(sucess)
+                    .catch(function (e) {
+                    _this.handleError(e);
+                    if (error)
+                        error(e);
+                    return Promise.reject(e);
+                });
+            };
+            csafeBuffer.sendExtended = function (sourceAddress, destinationAddress, sucess, error) {
+                return _this.sendCSafeBuffer(csafeBuffer, {
+                    sourceAddress: sourceAddress,
+                    destinationAddress: destinationAddress,
+                })
                     .then(sucess)
                     .catch(function (e) {
                     _this.handleError(e);
