@@ -23,73 +23,75 @@
  */
 
 namespace ergometer {
-
-
   export interface ErrorHandler {
-    (e : any) : void;
+    (e: any): void;
   }
-  export enum LogLevel {error,info,debug,trace}
+  export enum LogLevel {
+    error,
+    info,
+    debug,
+    trace,
+  }
 
   export interface LogEvent extends pubSub.ISubscription {
-      (text : string,logLevel : LogLevel) : void;
+    (text: string, logLevel: LogLevel): void;
   }
-  export enum MonitorConnectionState {inactive,deviceReady,scanning,connecting,connected,servicesFound,readyForCommunication}
+  export enum MonitorConnectionState {
+    inactive,
+    deviceReady,
+    scanning,
+    connecting,
+    connected,
+    servicesFound,
+    readyForCommunication,
+  }
 
   export interface ConnectionStateChangedEvent extends pubSub.ISubscription {
-      (oldState : MonitorConnectionState,newState : MonitorConnectionState) : void;
+    (oldState: MonitorConnectionState, newState: MonitorConnectionState): void;
   }
   export class MonitorBase {
+    private _logEvent = new pubSub.Event<LogEvent>();
+    private _logLevel: LogLevel = LogLevel.error;
+    private _connectionStateChangedEvent =
+      new pubSub.Event<ConnectionStateChangedEvent>();
 
-    private _logEvent= new pubSub.Event<LogEvent>();
-    private _logLevel : LogLevel = LogLevel.error;
-    private _connectionStateChangedEvent = new pubSub.Event<ConnectionStateChangedEvent>();   
-
-    protected _connectionState : MonitorConnectionState = MonitorConnectionState.inactive;
+    protected _connectionState: MonitorConnectionState =
+      MonitorConnectionState.inactive;
 
     /**
-    * By default it the logEvent will return errors if you want more debug change the log level
-    * @returns {LogLevel}
-    */
+     * By default it the logEvent will return errors if you want more debug change the log level
+     * @returns {LogLevel}
+     */
     public get logEvent(): pubSub.Event<LogEvent> {
       return this._logEvent;
     }
-    
-    public constructor() {
-        
-        this.initialize();
-        
-    }
-    protected initialize() {
-        
-     
-    }
 
-    get logLevel():LogLevel {
+    public constructor() {
+      this.initialize();
+    }
+    protected initialize() {}
+
+    get logLevel(): LogLevel {
       return this._logLevel;
     }
-
 
     /**
      * By default it the logEvent will return errors if you want more debug change the log level
      * @param value
      */
-    set logLevel(value:LogLevel) {
-        this._logLevel = value;
+    set logLevel(value: LogLevel) {
+      this._logLevel = value;
     }
-    public disconnect() {
-        
-    }
+    public disconnect() {}
     /**
      * read the current connection state
      * @returns {MonitorConnectionState}
      */
-    public get connectionState():MonitorConnectionState {
-        return this._connectionState;
+    public get connectionState(): MonitorConnectionState {
+      return this._connectionState;
     }
 
-    protected connected() {
-        
-    }
+    protected connected() {}
     /**
      * event which is called when the connection state is changed. For example this way you
      * can check if the device is disconnected.
@@ -99,74 +101,69 @@ namespace ergometer {
     public get connectionStateChangedEvent(): pubSub.Event<ConnectionStateChangedEvent> {
       return this._connectionStateChangedEvent;
     }
-    public debugInfo(info : string) {
-      if (this.logLevel>=LogLevel.debug)
-          this.logEvent.pub(info,LogLevel.debug);
+    public debugInfo(info: string) {
+      if (this.logLevel >= LogLevel.debug)
+        this.logEvent.pub(info, LogLevel.debug);
     }
 
     /**
      *
      * @param info
      */
-    public showInfo(info : string) {
-        if (this.logLevel>=LogLevel.info)
-            this.logEvent.pub(info,LogLevel.info);
+    public showInfo(info: string) {
+      if (this.logLevel >= LogLevel.info)
+        this.logEvent.pub(info, LogLevel.info);
     }
 
     /**
      * Print debug info to console and application UI.
      * @param info
      */
-    public traceInfo(info : string) {
-      if (this.logLevel>=LogLevel.trace)
-          this.logEvent.pub(info,LogLevel.trace);
+    public traceInfo(info: string) {
+      if (this.logLevel >= LogLevel.trace)
+        this.logEvent.pub(info, LogLevel.trace);
     }
 
     /**
      * call the global error hander and call the optional error handler if given
      * @param error
      */
-    public handleError(error:string,errorFn? : ErrorHandler) {
-        if (this.logLevel>=LogLevel.error)
-            this.logEvent.pub(error,LogLevel.error);
-        if (errorFn) errorFn(error);
+    public handleError(error: string, errorFn?: ErrorHandler) {
+      if (this.logLevel >= LogLevel.error)
+        this.logEvent.pub(error, LogLevel.error);
+      if (errorFn) errorFn(error);
     }
-    
 
     /**
      * Get an error function which adds the errorDescription to the error ,cals the global and an optional local funcion
      * @param errorDescription
      * @param errorFn
      */
-    public getErrorHandlerFunc(errorDescription : string, errorFn? :ErrorHandler) :ErrorHandler {
-
-        return (e) => {
-            this.handleError(errorDescription+':'+e.toString(),errorFn);
-      }
-
+    public getErrorHandlerFunc(
+      errorDescription: string,
+      errorFn?: ErrorHandler
+    ): ErrorHandler {
+      return (e) => {
+        this.handleError(errorDescription + ":" + e.toString(), errorFn);
+      };
     }
-    protected beforeConnected() {
-
-    }
+    protected beforeConnected() {}
     /**
      *
      * @param value
      */
-    protected changeConnectionState(value : MonitorConnectionState) {
-      if (this._connectionState!=value) {
-          var oldValue=this._connectionState;
-          this._connectionState=value;
-          if (value==MonitorConnectionState.connected) {
-              this.beforeConnected();
-          }
-          this.connectionStateChangedEvent.pub(oldValue,value);
-          if (value==MonitorConnectionState.connected) {
-              this.connected();
-          }
-            
+    protected changeConnectionState(value: MonitorConnectionState) {
+      if (this._connectionState != value) {
+        var oldValue = this._connectionState;
+        this._connectionState = value;
+        if (value == MonitorConnectionState.connected) {
+          this.beforeConnected();
+        }
+        this.connectionStateChangedEvent.pub(oldValue, value);
+        if (value == MonitorConnectionState.connected) {
+          this.connected();
+        }
       }
     }
-    
-   
   }
 }

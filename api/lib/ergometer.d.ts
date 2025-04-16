@@ -232,9 +232,9 @@ declare namespace ergometer {
         private _connectionStateChangedEvent;
         protected _connectionState: MonitorConnectionState;
         /**
-        * By default it the logEvent will return errors if you want more debug change the log level
-        * @returns {LogLevel}
-        */
+         * By default it the logEvent will return errors if you want more debug change the log level
+         * @returns {LogLevel}
+         */
         get logEvent(): pubSub.Event<LogEvent>;
         constructor();
         protected initialize(): void;
@@ -1454,10 +1454,13 @@ declare namespace ergometer.csafe {
         responseBuffer?: IResponseBuffer;
     }
     interface IBuffer {
+        extended?: {
+            sourceAddress: number;
+            destinationAddress: number;
+        };
         rawCommands: IRawCommand[];
         addRawCommand(info: IRawCommand): any;
         send(success?: () => void, error?: ErrorHandler): Promise<void>;
-        sendExtended(sourceAddress: number, destinationAddress: number, success?: () => void, error?: ErrorHandler): Promise<void>;
     }
     interface IResponseBuffer {
         monitorStatus: ergometer.csafe.SlaveState;
@@ -2125,12 +2128,14 @@ declare namespace ergometer {
     }
     const enum FrameState {
         initial = 0,
-        statusByte = 1,
-        parseCommand = 2,
-        parseCommandLength = 3,
-        parseDetailCommand = 4,
-        parseDetailCommandLength = 5,
-        parseCommandData = 6
+        extendedFrameSource = 1,
+        extendedFrameDestination = 2,
+        statusByte = 3,
+        parseCommand = 4,
+        parseCommandLength = 5,
+        parseDetailCommand = 6,
+        parseDetailCommandLength = 7,
+        parseCommandData = 8
     }
     interface PowerCurveEvent extends pubSub.ISubscription {
         (data: number[]): void;
@@ -2140,6 +2145,8 @@ declare namespace ergometer {
         commandDataIndex: number;
         commandData: Uint8Array;
         frameState: FrameState;
+        extendedFrameSource: number;
+        extendedFrameDestination: number;
         nextDataLength: number;
         detailCommand: number;
         statusByte: number;
@@ -2222,10 +2229,7 @@ declare namespace ergometer {
          * @param error
          * @returns {Promise<void>|Promise} use promis instead of success and error function
          */
-        sendCSafeBuffer(csafeBuffer: ergometer.csafe.IBuffer, extended?: {
-            sourceAddress: number;
-            destinationAddress: number;
-        }): Promise<void>;
+        sendCSafeBuffer(csafeBuffer: ergometer.csafe.IBuffer): Promise<void>;
         protected checkSendBufferAtEnd(): void;
         protected checkSendBuffer(): void;
         protected sendBufferFromQueue(sendData: SendBufferQueued): void;

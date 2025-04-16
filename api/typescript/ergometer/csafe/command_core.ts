@@ -40,15 +40,10 @@ namespace ergometer.csafe {
     responseBuffer?: IResponseBuffer;
   }
   export interface IBuffer {
+    extended?: { sourceAddress: number; destinationAddress: number };
     rawCommands: IRawCommand[];
     addRawCommand(info: IRawCommand);
     send(success?: () => void, error?: ErrorHandler): Promise<void>;
-    sendExtended(
-      sourceAddress: number,
-      destinationAddress: number,
-      success?: () => void,
-      error?: ErrorHandler
-    ): Promise<void>;
   }
   export interface IResponseBuffer {
     monitorStatus: ergometer.csafe.SlaveState;
