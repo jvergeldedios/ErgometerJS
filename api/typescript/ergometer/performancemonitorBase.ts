@@ -42,6 +42,8 @@ namespace ergometer {
   }
   export const enum FrameState {
     initial,
+    extendedFrameSource,
+    extendedFrameDestination,
     statusByte,
     parseCommand,
     parseCommandLength,
@@ -61,6 +63,8 @@ namespace ergometer {
     public commandDataIndex = 0;
     public commandData: Uint8Array;
     public frameState = FrameState.initial;
+    public extendedFrameSource = 0;
+    public extendedFrameDestination = 0;
     public nextDataLength = 0;
     public detailCommand = 0;
     public statusByte = 0;
@@ -268,8 +272,7 @@ namespace ergometer {
      * @returns {Promise<void>|Promise} use promis instead of success and error function
      */
     public sendCSafeBuffer(
-      csafeBuffer: ergometer.csafe.IBuffer,
-      extended?: { sourceAddress: number; destinationAddress: number }
+      csafeBuffer: ergometer.csafe.IBuffer
     ): Promise<void> {
       return new Promise((resolve, reject) => {
         //prepare the array to be send
@@ -324,13 +327,12 @@ namespace ergometer {
             prevCommandIndex = commandIndex;
           }
         });
-
         this._sendBufferQueue.push({
           commandArray: commandArray,
           resolve: resolve,
           reject: reject,
           rawCommandBuffer: rawCommandBuffer,
-          extended,
+          extended: csafeBuffer.extended,
         });
         this.checkSendBuffer();
         //send all the csafe commands in one go
@@ -375,13 +377,15 @@ namespace ergometer {
       this._waitResonseBuffers.push(waitBuffer);
       //then send the data
 
-      this.sendCsafeCommands(sendData.commandArray).catch((e) => {
-        //When it could not be send remove it
-        this.removeResponseBuffer(waitBuffer);
-        //send the error to all items
-        waitBuffer.removedWithError(e);
-        this.checkSendBufferAtEnd();
-      });
+      this.sendCsafeCommands(sendData.commandArray, sendData.extended).catch(
+        (e) => {
+          //When it could not be send remove it
+          this.removeResponseBuffer(waitBuffer);
+          //send the error to all items
+          waitBuffer.removedWithError(e);
+          this.checkSendBufferAtEnd();
+        }
+      );
     }
     protected sendCsafeCommands(
       byteArray: number[],
@@ -533,15 +537,32 @@ namespace ergometer {
             switch (waitBuffer.frameState) {
               case FrameState.initial: {
                 //expect a start frame
-                if (currentByte != csafe.defs.FRAME_START_BYTE) {
+                if (
+                  currentByte != csafe.defs.FRAME_START_BYTE &&
+                  currentByte != csafe.defs.EXT_FRAME_START_BYTE
+                ) {
                   moveToNextBuffer = true;
                   if (this.logLevel == LogLevel.trace)
                     this.traceInfo(
                       "stop byte " + utils.toHexString(currentByte, 1)
                     );
-                } else waitBuffer.frameState = FrameState.statusByte;
+                } else if (currentByte === csafe.defs.FRAME_START_BYTE) {
+                  waitBuffer.frameState = FrameState.statusByte;
+                } else if (currentByte === csafe.defs.EXT_FRAME_START_BYTE) {
+                  waitBuffer.frameState = FrameState.extendedFrameDestination;
+                }
                 waitBuffer.calcCheck = 0;
 
+                break;
+              }
+              case FrameState.extendedFrameDestination: {
+                waitBuffer.extendedFrameDestination = currentByte;
+                waitBuffer.frameState = FrameState.extendedFrameSource;
+                break;
+              }
+              case FrameState.extendedFrameSource: {
+                waitBuffer.extendedFrameSource = currentByte;
+                waitBuffer.frameState = FrameState.statusByte;
                 break;
               }
               case FrameState.statusByte: {
@@ -659,7 +680,6 @@ namespace ergometer {
           }
           i++;
         }
-
         if (this._receivePartialBuffers) {
           //when something went wrong, the bluetooth block is endend but the frame not
           //this is for blue tooth
@@ -692,23 +712,6 @@ namespace ergometer {
 
       csafeBuffer.send = (sucess?: () => void, error?: ErrorHandler) => {
         return this.sendCSafeBuffer(csafeBuffer)
-          .then(sucess)
-          .catch((e) => {
-            this.handleError(e);
-            if (error) error(e);
-            return Promise.reject(e);
-          });
-      };
-      csafeBuffer.sendExtended = (
-        sourceAddress: number,
-        destinationAddress: number,
-        sucess?: () => void,
-        error?: ErrorHandler
-      ) => {
-        return this.sendCSafeBuffer(csafeBuffer, {
-          sourceAddress,
-          destinationAddress,
-        })
           .then(sucess)
           .catch((e) => {
             this.handleError(e);

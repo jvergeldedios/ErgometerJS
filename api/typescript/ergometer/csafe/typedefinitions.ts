@@ -258,7 +258,7 @@ namespace ergometer.csafe.defs {
   export const enum PM_SHORT_PULL_CFG_CMDS {
     PM_GET_FW_VERSION = 0x80, // GETPMCFG_CMD_SHORT_MIN
     PM_GET_HW_VERSION, // 0x81
-    PM_GET_HW_ADDRESS, // 0x82
+    PM_GET_HW_ADDRESS = 0x82, // 0x82
     PM_GET_TICK_TIMEBASE, // 0x83
     PM_GET_HRM, // 0x84
     // Unused,                                                      // 0x85

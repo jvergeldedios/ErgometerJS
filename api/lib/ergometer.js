@@ -548,17 +548,16 @@ var ergometer;
         }
         Object.defineProperty(MonitorBase.prototype, "logEvent", {
             /**
-            * By default it the logEvent will return errors if you want more debug change the log level
-            * @returns {LogLevel}
-            */
+             * By default it the logEvent will return errors if you want more debug change the log level
+             * @returns {LogLevel}
+             */
             get: function () {
                 return this._logEvent;
             },
             enumerable: false,
             configurable: true
         });
-        MonitorBase.prototype.initialize = function () {
-        };
+        MonitorBase.prototype.initialize = function () { };
         Object.defineProperty(MonitorBase.prototype, "logLevel", {
             get: function () {
                 return this._logLevel;
@@ -573,8 +572,7 @@ var ergometer;
             enumerable: false,
             configurable: true
         });
-        MonitorBase.prototype.disconnect = function () {
-        };
+        MonitorBase.prototype.disconnect = function () { };
         Object.defineProperty(MonitorBase.prototype, "connectionState", {
             /**
              * read the current connection state
@@ -586,8 +584,7 @@ var ergometer;
             enumerable: false,
             configurable: true
         });
-        MonitorBase.prototype.connected = function () {
-        };
+        MonitorBase.prototype.connected = function () { };
         Object.defineProperty(MonitorBase.prototype, "connectionStateChangedEvent", {
             /**
              * event which is called when the connection state is changed. For example this way you
@@ -639,11 +636,10 @@ var ergometer;
         MonitorBase.prototype.getErrorHandlerFunc = function (errorDescription, errorFn) {
             var _this = this;
             return function (e) {
-                _this.handleError(errorDescription + ':' + e.toString(), errorFn);
+                _this.handleError(errorDescription + ":" + e.toString(), errorFn);
             };
         };
-        MonitorBase.prototype.beforeConnected = function () {
-        };
+        MonitorBase.prototype.beforeConnected = function () { };
         /**
          *
          * @param value
@@ -2617,6 +2613,8 @@ var ergometer;
             this.command = 0;
             this.commandDataIndex = 0;
             this.frameState = 0 /* FrameState.initial */;
+            this.extendedFrameSource = 0;
+            this.extendedFrameDestination = 0;
             this.nextDataLength = 0;
             this.detailCommand = 0;
             this.statusByte = 0;
@@ -2800,7 +2798,7 @@ var ergometer;
          * @param error
          * @returns {Promise<void>|Promise} use promis instead of success and error function
          */
-        PerformanceMonitorBase.prototype.sendCSafeBuffer = function (csafeBuffer, extended) {
+        PerformanceMonitorBase.prototype.sendCSafeBuffer = function (csafeBuffer) {
             var _this = this;
             return new Promise(function (resolve, reject) {
                 //prepare the array to be send
@@ -2862,7 +2860,7 @@ var ergometer;
                     resolve: resolve,
                     reject: reject,
                     rawCommandBuffer: rawCommandBuffer,
-                    extended: extended,
+                    extended: csafeBuffer.extended,
                 });
                 _this.checkSendBuffer();
                 //send all the csafe commands in one go
@@ -2898,7 +2896,7 @@ var ergometer;
             var waitBuffer = new WaitResponseBuffer(this, resolve, reject, sendData.rawCommandBuffer, this._commandTimeout);
             this._waitResonseBuffers.push(waitBuffer);
             //then send the data
-            this.sendCsafeCommands(sendData.commandArray).catch(function (e) {
+            this.sendCsafeCommands(sendData.commandArray, sendData.extended).catch(function (e) {
                 //When it could not be send remove it
                 _this.removeResponseBuffer(waitBuffer);
                 //send the error to all items
@@ -3032,18 +3030,33 @@ var ergometer;
                         switch (waitBuffer.frameState) {
                             case 0 /* FrameState.initial */: {
                                 //expect a start frame
-                                if (currentByte != ergometer.csafe.defs.FRAME_START_BYTE) {
+                                if (currentByte != ergometer.csafe.defs.FRAME_START_BYTE &&
+                                    currentByte != ergometer.csafe.defs.EXT_FRAME_START_BYTE) {
                                     moveToNextBuffer = true;
                                     if (this.logLevel == ergometer.LogLevel.trace)
                                         this.traceInfo("stop byte " + ergometer.utils.toHexString(currentByte, 1));
                                 }
-                                else
-                                    waitBuffer.frameState = 1 /* FrameState.statusByte */;
+                                else if (currentByte === ergometer.csafe.defs.FRAME_START_BYTE) {
+                                    waitBuffer.frameState = 3 /* FrameState.statusByte */;
+                                }
+                                else if (currentByte === ergometer.csafe.defs.EXT_FRAME_START_BYTE) {
+                                    waitBuffer.frameState = 2 /* FrameState.extendedFrameDestination */;
+                                }
                                 waitBuffer.calcCheck = 0;
                                 break;
                             }
-                            case 1 /* FrameState.statusByte */: {
-                                waitBuffer.frameState = 2 /* FrameState.parseCommand */;
+                            case 2 /* FrameState.extendedFrameDestination */: {
+                                waitBuffer.extendedFrameDestination = currentByte;
+                                waitBuffer.frameState = 1 /* FrameState.extendedFrameSource */;
+                                break;
+                            }
+                            case 1 /* FrameState.extendedFrameSource */: {
+                                waitBuffer.extendedFrameSource = currentByte;
+                                waitBuffer.frameState = 3 /* FrameState.statusByte */;
+                                break;
+                            }
+                            case 3 /* FrameState.statusByte */: {
+                                waitBuffer.frameState = 4 /* FrameState.parseCommand */;
                                 waitBuffer.statusByte = currentByte;
                                 waitBuffer.monitorStatus =
                                     currentByte & ergometer.csafe.defs.SLAVESTATE_MSK;
@@ -3054,13 +3067,13 @@ var ergometer;
                                 waitBuffer._responseState = currentByte;
                                 break;
                             }
-                            case 2 /* FrameState.parseCommand */: {
+                            case 4 /* FrameState.parseCommand */: {
                                 waitBuffer.command = currentByte;
-                                waitBuffer.frameState = 3 /* FrameState.parseCommandLength */;
+                                waitBuffer.frameState = 5 /* FrameState.parseCommandLength */;
                                 //the real command follows so skip this
                                 break;
                             }
-                            case 3 /* FrameState.parseCommandLength */: {
+                            case 5 /* FrameState.parseCommandLength */: {
                                 //first work arround strange results where the status byte is the same
                                 //as the the command and the frame directly ends, What is the meaning of
                                 //this? some kind of status??
@@ -3087,24 +3100,24 @@ var ergometer;
                                     waitBuffer.endCommand = i + currentByte;
                                     waitBuffer.nextDataLength = currentByte;
                                     if (waitBuffer.command >= ergometer.csafe.defs.CTRL_CMD_SHORT_MIN) {
-                                        waitBuffer.frameState = 6 /* FrameState.parseCommandData */;
+                                        waitBuffer.frameState = 8 /* FrameState.parseCommandData */;
                                     }
                                     else
-                                        waitBuffer.frameState = 4 /* FrameState.parseDetailCommand */;
+                                        waitBuffer.frameState = 6 /* FrameState.parseDetailCommand */;
                                 }
                                 break;
                             }
-                            case 4 /* FrameState.parseDetailCommand */: {
+                            case 6 /* FrameState.parseDetailCommand */: {
                                 waitBuffer.detailCommand = currentByte;
-                                waitBuffer.frameState = 5 /* FrameState.parseDetailCommandLength */;
+                                waitBuffer.frameState = 7 /* FrameState.parseDetailCommandLength */;
                                 break;
                             }
-                            case 5 /* FrameState.parseDetailCommandLength */: {
+                            case 7 /* FrameState.parseDetailCommandLength */: {
                                 waitBuffer.nextDataLength = currentByte;
-                                waitBuffer.frameState = 6 /* FrameState.parseCommandData */;
+                                waitBuffer.frameState = 8 /* FrameState.parseCommandData */;
                                 break;
                             }
-                            case 6 /* FrameState.parseCommandData */: {
+                            case 8 /* FrameState.parseCommandData */: {
                                 if (!waitBuffer.commandData) {
                                     waitBuffer.commandDataIndex = 0;
                                     waitBuffer.commandData = new Uint8Array(waitBuffer.nextDataLength);
@@ -3116,9 +3129,9 @@ var ergometer;
                                 if (waitBuffer.nextDataLength == 0) {
                                     if (waitBuffer.command < ergometer.csafe.defs.CTRL_CMD_SHORT_MIN &&
                                         i < waitBuffer.endCommand)
-                                        waitBuffer.frameState = 4 /* FrameState.parseDetailCommand */;
+                                        waitBuffer.frameState = 6 /* FrameState.parseDetailCommand */;
                                     else
-                                        waitBuffer.frameState = 2 /* FrameState.parseCommand */;
+                                        waitBuffer.frameState = 4 /* FrameState.parseCommand */;
                                     try {
                                         waitBuffer.receivedCSaveCommand({
                                             command: waitBuffer.command,
@@ -3168,19 +3181,6 @@ var ergometer;
             };
             csafeBuffer.send = function (sucess, error) {
                 return _this.sendCSafeBuffer(csafeBuffer)
-                    .then(sucess)
-                    .catch(function (e) {
-                    _this.handleError(e);
-                    if (error)
-                        error(e);
-                    return Promise.reject(e);
-                });
-            };
-            csafeBuffer.sendExtended = function (sourceAddress, destinationAddress, sucess, error) {
-                return _this.sendCSafeBuffer(csafeBuffer, {
-                    sourceAddress: sourceAddress,
-                    destinationAddress: destinationAddress,
-                })
                     .then(sucess)
                     .catch(function (e) {
                     _this.handleError(e);
@@ -3414,7 +3414,7 @@ var ergometer;
                     .then(resolve)
                     .catch(function (err) {
                     //the usb has not an disconnect event, assume an error is an disconnect
-                    _this.disconnected();
+                    // this.disconnected();
                     reject(err);
                 });
             });
@@ -3425,8 +3425,9 @@ var ergometer;
         PerformanceMonitorUsb.prototype.sendCSafeBuffer = function (csafeBuffer) {
             var _this = this;
             if (this.connectionState !=
-                ergometer.MonitorConnectionState.readyForCommunication)
+                ergometer.MonitorConnectionState.readyForCommunication) {
                 return Promise.reject("can not send data, not connected");
+            }
             return new Promise(function (resolve, reject) {
                 if (_this.connectionState !=
                     ergometer.MonitorConnectionState.readyForCommunication)
@@ -3444,7 +3445,7 @@ var ergometer;
                         resolve();
                     })
                         .catch(function (e) {
-                        _this.disconnected(); //the usb has not an disconnect event, assume an error is an disconnect
+                        // this.disconnected(); //the usb has not an disconnect event, assume an error is an disconnect
                         _this.handleError(e);
                         _this.traceInfo("end buzy");
                         reject(e);

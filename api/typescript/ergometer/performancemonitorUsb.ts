@@ -188,7 +188,7 @@ namespace ergometer {
           .then(resolve)
           .catch((err) => {
             //the usb has not an disconnect event, assume an error is an disconnect
-            this.disconnected();
+            // this.disconnected();
             reject(err);
           });
       });
@@ -203,8 +203,9 @@ namespace ergometer {
       if (
         this.connectionState !=
         ergometer.MonitorConnectionState.readyForCommunication
-      )
+      ) {
         return Promise.reject("can not send data, not connected");
+      }
       return new Promise((resolve, reject) => {
         if (
           this.connectionState !=
@@ -225,7 +226,7 @@ namespace ergometer {
               resolve();
             })
             .catch((e) => {
-              this.disconnected(); //the usb has not an disconnect event, assume an error is an disconnect
+              // this.disconnected(); //the usb has not an disconnect event, assume an error is an disconnect
               this.handleError(e);
               this.traceInfo("end buzy");
               reject(e);
