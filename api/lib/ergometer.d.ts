@@ -1170,7 +1170,8 @@ declare namespace ergometer.csafe.defs {
         PM_GET_CPUTICKRATE = 157,// 0x9D
         PM_GET_LOGCARDCENSUS = 158,// 0x9E
         PM_GET_WORKOUTINTERVALCOUNT = 159,// 0x9F
-        GETPMCFG_CMD_SHORT_MAX = 160
+        GETPMCFG_CMD_SHORT_MAX = 160,
+        PM_GET_RACE_BEGINEND_TICKCOUNT = 238
     }
     const enum PM_SHORT_PULL_DATA_CMDS {
         PM_GET_WORKTIME = 160,// GETPMDATA_CMD_SHORT_MIN

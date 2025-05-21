@@ -289,6 +289,7 @@ namespace ergometer.csafe.defs {
     PM_GET_LOGCARDCENSUS, // 0x9E
     PM_GET_WORKOUTINTERVALCOUNT, // 0x9F
     GETPMCFG_CMD_SHORT_MAX,
+    PM_GET_RACE_BEGINEND_TICKCOUNT = 0xee, // 0xee
   }
 
   /*
