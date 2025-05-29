@@ -2939,7 +2939,7 @@ var ergometer;
                         bytesToSend = [ergometer.csafe.defs.FRAME_START_BYTE];
                     }
                     bytesToSend = bytesToSend
-                        .concat(byteArray)
+                        .concat(newArray)
                         .concat([checksum, ergometer.csafe.defs.FRAME_END_BYTE]);
                     if (_this._splitCommandsWhenToBig &&
                         bytesToSend.length > _this.getPacketSize())
