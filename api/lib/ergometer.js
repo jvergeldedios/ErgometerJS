@@ -13,6 +13,15 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 /**
  * Created by tijmen on 25-12-15.
  */
@@ -2913,6 +2922,7 @@ var ergometer;
                     var checksum = 0;
                     for (var i = 0; i < byteArray.length; i++)
                         checksum = checksum ^ byteArray[i];
+                    byteArray.push(checksum);
                     var newArray = [];
                     for (var i = 0; i < byteArray.length; i++) {
                         var value = byteArray[i];
@@ -2938,9 +2948,9 @@ var ergometer;
                     else {
                         bytesToSend = [ergometer.csafe.defs.FRAME_START_BYTE];
                     }
-                    bytesToSend = bytesToSend
-                        .concat(newArray)
-                        .concat([checksum, ergometer.csafe.defs.FRAME_END_BYTE]);
+                    bytesToSend = __spreadArray(__spreadArray(__spreadArray([], bytesToSend, true), newArray, true), [
+                        ergometer.csafe.defs.FRAME_END_BYTE,
+                    ], false);
                     if (_this._splitCommandsWhenToBig &&
                         bytesToSend.length > _this.getPacketSize())
                         reject("Csafe commands with length ".concat(bytesToSend.length, " does not fit into buffer with size ").concat(_this.getPacketSize(), " "));

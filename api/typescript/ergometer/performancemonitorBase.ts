@@ -399,6 +399,8 @@ namespace ergometer {
           for (let i = 0; i < byteArray.length; i++)
             checksum = checksum ^ byteArray[i];
 
+          byteArray.push(checksum);
+
           var newArray = [];
           for (let i = 0; i < byteArray.length; i++) {
             var value = byteArray[i];
@@ -421,9 +423,11 @@ namespace ergometer {
           } else {
             bytesToSend = [csafe.defs.FRAME_START_BYTE];
           }
-          bytesToSend = bytesToSend
-            .concat(newArray)
-            .concat([checksum, csafe.defs.FRAME_END_BYTE]);
+          bytesToSend = [
+            ...bytesToSend,
+            ...newArray,
+            csafe.defs.FRAME_END_BYTE,
+          ];
           if (
             this._splitCommandsWhenToBig &&
             bytesToSend.length > this.getPacketSize()
