@@ -422,7 +422,7 @@ namespace ergometer {
             bytesToSend = [csafe.defs.FRAME_START_BYTE];
           }
           bytesToSend = bytesToSend
-            .concat(byteArray)
+            .concat(newArray)
             .concat([checksum, csafe.defs.FRAME_END_BYTE]);
           if (
             this._splitCommandsWhenToBig &&
